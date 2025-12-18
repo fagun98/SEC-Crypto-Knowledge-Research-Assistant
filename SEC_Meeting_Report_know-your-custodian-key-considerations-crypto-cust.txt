@@ -1,0 +1,262 @@
+SEC ROUND TABLE MEETING REPORT
+Meeting: Crypto Task Force Roundtable — "Know Your Custodian: Key Considerations for Crypto Custody"
+Date: April 25, 2025
+Meeting URL: https://www.sec.gov/newsroom/meetings-events/know-your-custodian-key-considerations-crypto-custody
+Transcript file: april_28_2025.txt (full transcript provided)
+
+SOURCES CITED IN THIS REPORT
+- SEC meeting page / panelist listing (parsed): SEC.gov | Crypto Task Force Roundtable — Know Your Custodian: Key Considerations for Crypto Custody (parse_url output). [SEC meeting page]
+- Full meeting transcript: april_28_2025.txt (text provided by user). [Transcript]
+- SEC RAG result: Peirce, "Lava and Lamps: Opening Remarks for Crypto Custody Roundtable" (SEC speech referenced in RAG results). [RAG search result used for regulatory context]  
+(See Sources section at end for links / file names.)
+
+1. EXECUTIVE SUMMARY
+- Purpose: The SEC Crypto Task Force held a two-panel roundtable to explore how SEC custody rules (and related frameworks) should apply to crypto assets — focusing first on broker-dealer custody (Panel 1) and then on investment adviser / investment company custody (Panel 2).
+- High-level outcomes: Strong, cross‑cutting agreement that (a) investor protection is paramount; (b) industry needs clear, technology‑neutral, principles‑based standards rather than brittle, prescriptive technical rules; (c) the SEC should provide greater clarity about who qualifies as a "qualified custodian" (including whether state‑chartered trust companies and other licenced entities qualify); (d) self‑custody and emerging custody models (MPC, smart‑contract arrangements, proof‑of‑reserves, Merkle trees) can have a role but require safeguards, audits and disclosure; and (e) insolvency/resolution protections (SIPA, custody/credit protections, UCC Article 8) remain unresolved and may require interagency work and possibly legislative action.
+- No rulemaking decision was announced. The roundtable solicited perspectives to inform the Commission’s next steps and encouraged written submissions and continued engagement.
+
+2. KEY SPEAKERS ANALYSIS
+(Note: speaker activity ratings are qualitative (High / Medium / Low) derived from the transcript; "Activity" reflects frequency and length of substantive interventions rather than every brief utterance.)
+
+A. Chairman Gary Gensler? / Chairman Atkins
+- Name / Affiliation: Chairman Atkins — Chairman, U.S. Securities and Exchange Commission (appeared opening; transcript uses "Chairman Atkins").
+- Influence Rating: 9/10 — as Chair, set framing and priorities; opening remarks established guiding principles (investor protection, parity with existing custody standards) and signaled Commission intent to consider changes.
+- Activity Level: Medium (opening remarks + framing) — one long, substantive block at the start; moderated tone but set agenda.
+- Argument Strength: 9/10 — arguments were comprehensive, principle‑driven, grounded in investor protection and risk questions (bankruptcy, hacking, smart contract risk). Provided concrete policy questions for panels to address.
+- Key contributions (quote): "Existing SEC custody rules are a gold standard of investor protection." (Transcript) — used as the baseline for any change.
+- Justification: His framing was decisive for the rest of discussion: preserve investor protections, consider whether crypto needs a separate regime, and ask concrete questions about qualified custodians, omnibus wallets, SIPA, and examiner coordination.
+
+B. Richard Gabbert
+- Name / Affiliation: Richard Gabbert — Chief of Staff, Crypto Task Force (SEC) — event host/introductions.
+- Influence Rating: 5/10 — logistical and framing influence.
+- Activity Level: Low/Medium — opening housekeeping, moderator handoff.
+- Argument Strength: 6/10 — provided context for roundtables and on‑record reminder.
+- Key contributions: Introduced panels; noted objective: "This is the third of five roundtables in the commission's spring sprint toward crypto clarity." (Transcript)
+
+Panel 1 — Broker‑Dealer Custody (selected key panelists who were most active)
+
+C. Mark Greenberg — Kraken (Operator perspective)
+- Affiliation: Kraken (crypto exchange/operator).
+- Influence Rating: 7/10 — strong operational voice and visible practitioner credibility.
+- Activity Level: High — multiple substantive interventions across omnibus/segregation and movement-of-assets arguments.
+- Argument Strength: 7/10 — clear operational logic: "the less crypto moves, the safer it is"; advocated principal‑based effective control rather than technology‑specific rules.
+- Representative quotes:
+  - "Crypto assets are best held at rest... the more you segregate assets into small little wallets, the more you focus on them ... the more often you have to move it... the more likely it is to get stolen." (Transcript)
+  - "I think probably maybe an effective control standard might be the right one in this case versus one around physical possession." (Transcript)
+- Justification: Emphasized trade‑off between segregation (transparency) and operational safety (reduced movement), supporting omnibus/netting in some contexts.
+
+D. Rachel Anderica — Anchorage Digital Bank
+- Affiliation: Anchorage Digital / Anchorage Digital Bank (federally chartered digital asset bank).
+- Influence Rating: 8/10 — strong practitioner voice representing a federally‑chartered bank custodian model.
+- Activity Level: High — frequent contributions explaining bank/trust rationale and operational controls.
+- Argument Strength: 8/10 — cogent, evidence‑based defense of bank/charter model and fiduciary safeguards; emphasized audits, key generation ceremonies, segregation, capital, regulatory oversight and bankruptcy remoteness.
+- Representative quotes:
+  - "For us, the way that we think about our custodial solution, we built it around that concept of the proof of existence and exclusive control..." (Transcript)
+  - "There are various regimes in the United States that take care of that [bankruptcy remoteness] and I think that... is something that... you would want." (Transcript)
+- Justification: Anchored arguments in familiar banking regulatory safeguards; argued for recognition of chartered trust companies as qualified custodians.
+
+E. Jason Allegrante — Fireblocks (chief legal / self‑custody technology)
+- Affiliation: Fireblocks (custody infrastructure / MPC provider).
+- Influence Rating: 8/10 — argued for qualitative, technology‑neutral standards and parity across custody models; influential in conceptual framing.
+- Activity Level: High — multiple long turns (defining assessment framework, contracts as data points).
+- Argument Strength: 8/10 — strong articulation of a principles‑based approach, contracts/auditability as evidence of control, and the need for regulators to set qualitative standards rather than tech specifics.
+- Representative quotes:
+  - "I think there is an impulse to set self-custody solutions up against custodial solutions... they can both be either really good or really bad." (Transcript)
+  - "Why don't we have a look at the contract... that's another data point that can help broker dealers establish who is in possession or control." (Transcript)
+- Justification: Offered practical, implementable assessment criteria (contracts, audits, principles-based outcomes).
+
+F. Baylor Meyers — BitGo
+- Affiliation: BitGo (custodian; state‑chartered trust company operator).
+- Influence Rating: 7/10 — emphasized clarity over new regulation and need to recognize state trust charters as QC.
+- Activity Level: Medium/High — several pointed interventions.
+- Argument Strength: 7/10 — practical: "We don't need more regulation. What we need is clarity."
+- Representative quote: "If the SEC were to clarify that, it would make it enormously more beneficial for us to do business rather than having to wave around a letter from a law firm..." (Transcript)
+
+G. Tammy Win — Copper (custody infrastructure)
+- Affiliation: Copper (custody infrastructure company).
+- Influence Rating: 6/10
+- Activity Level: Medium
+- Argument Strength: 7/10 — advocated principles and standards similar to TradFi safety standards (capital, audits, cybersecurity) while cautioning against product‑specific rules becoming quickly outdated.
+- Representative quote: "I think it would be the principal component is important because the rules will be out of date very quickly." (Transcript)
+
+H. Veronica McGregor — Exodus (self‑custody wallet)
+- Affiliation: Exodus (consumer self‑custody wallet provider).
+- Influence Rating: 6/10 — strong perspective representing self‑custody users and retail usability.
+- Activity Level: Medium — focused contributions on consumer choice and preserving self‑custody option.
+- Argument Strength: 7/10 — practical and persuasive on optionality and user preferences.
+- Representative quote: "What we really want to do is preserve the option for end users to be able to custody their own assets." (Transcript)
+
+I. Terrence Dempsey — Fidelity Digital Assets
+- Affiliation: Fidelity Digital Assets
+- Influence Rating: 6/10
+- Activity Level: Medium
+- Argument Strength: 7/10 — focused on tooling to demonstrate control (auditable key ceremonies, reports) and differences between tokens that look like securities vs native assets.
+- Representative quote: "Custodians have the ability to demonstrate control... having those audited, having reports you can provide to your clients or your regulator." (Transcript)
+
+J. Brandon Russell — (state‑chartered trust speaker)
+- Affiliation: State‑chartered trust custodian (identified in transcript as representing a state trust)
+- Influence Rating: 6/10
+- Activity Level: Medium
+- Argument Strength: 6/10 — described plug‑in, "best‑of‑breed" models and settlement complexity across platforms.
+
+Panel 1 — Other notable participants (shorter turn counts but important contributions): Justin Browder (Simpson Thacher; legal view on custody rule), Mark and others already listed.
+
+Panel 2 — Adviser & Investment Company Custody (selected key panelists)
+
+K. Susan G. Brown — (private practice counsel)
+- Affiliation: counsel/partner (transcript indicates "ANOS Sherman" — counsel at a law firm).
+- Influence Rating: 7/10 — legal framing for policy goals (protect assets from destruction, loss, theft) and for flexible approach.
+- Activity Level: High (Panel 2 opening + multiple substantive points).
+- Argument Strength: 8/10 — emphasized that policy goals are the same as traditional custody but rules must adapt.
+- Representative quote: "The policy goals are to protect assets from destruction, loss, and theft... and I think that's the policy goal no matter what the asset is." (Transcript)
+
+L. Larry Florio — 1KX (cryptofund manager)
+- Affiliation: 1KX (crypto-focused fund manager).
+- Influence Rating: 7/10 — practitioner fund manager perspective advocating for productive use of assets and recognition of different risks/benefits.
+- Activity Level: High
+- Argument Strength: 7/10 — argued for mitigating system risks without adding unnecessary barriers to productive crypto activity (staking, active on‑chain use).
+- Representative quote: "In crypto, we've created a technological infrastructure where you don't need intermediaries ... There's unique abilities that come with that and there's unique risks too." (Transcript)
+
+M. Chuck (Charles) Mooney — University of Pennsylvania Carey Law School / ULC
+- Affiliation: Academic / Uniform Law Commission (transcript indicates professor/commissioner roles).
+- Influence Rating: 7/10 — legal structure and UCC Article 8 expertise.
+- Activity Level: Medium/High
+- Argument Strength: 8/10 — proposed looking to UCC Article 8 / perfection by control as a constructive legal path and supporting self‑custody options with legal clarity.
+- Representative quote: "We could maybe look at the definition of control and the new article 12 which I hope the SEC will encourage the adoption of because it provides the 'take‑free' rule for good faith purchasers as well as perfection by control..." (Transcript)
+
+N. Neil Matra (Decert), Ryan Lo (WisdomTree), Justin Browder (again), Adam (practitioner), Brandon (custodial trust) — active contributors who emphasized: marketplace realities, risks of forcing custodial forms that don't fit on‑chain mechanics, need for disclosure and exam frameworks, and that custody choices must reflect differing adviser/business models.
+
+Most Influential Speaker (overall):
+- Chairman Atkins — because he set the policy framing (preserving investor protections, asking concrete written questions), gave political and regulatory direction for the Commission’s current leadership (this was his first public event as Chair referenced in transcript), and his framing shaped the questions that both panels tried to answer. Among panelists, Jason Allegrante (Fireblocks) and Rachel Anderica (Anchorage) were most influential in shaping the practical and principles‑based frameworks discussed.
+
+3. VIEWS ON TOPICS
+Main topics below show viewpoints expressed, level of consensus and remaining disagreement.
+
+Topic A — Overarching regulatory framing / custody rule baseline
+- Viewpoints:
+  - Chairman/SEC staff: existing custody rules are high‑bar; any change must preserve investor protection and consider bank / qualified custodian concepts, insolvency protection (SIPA), and systemic risks. (Chairman Atkins repeated throughout.) [Transcript]
+  - Many industry panelists: Seek clarity and a principles‑based, technology‑neutral standard so innovation isn't stifled and rules do not become obsolete. (Jason, Tammy, Mark, Rachel) [Transcript]
+- Consensus: Clear need for clarity and for technology‑neutral, principles‑based standards rather than prescriptive technical requirements.
+- Disagreement: Degree of how prescriptive (some argued for clearer entity/charter recognition; others favored high‑level principles plus supervisory guidance).
+
+Topic B — Who qualifies as a "Qualified Custodian" (banks, state trust companies, other licenses)
+- Viewpoints:
+  - Banks / federally chartered custodians: Many argued these fit the historical model that the rule relied on and provide bankruptcy remoteness and supervisor oversight (Rachel, Chairman Atkins).
+  - State chartered trust companies / specialized charters: Several panelists (Baylor, Brandon, others) urged formal SEC clarity recognizing state trust charters and other specialized charters as QC if they meet defined standards.
+  - Technology firms / MTLs / nonbank licensees: Panelists cautioned against automatically accepting low‑threshold licenses (e.g., simple money transmitter licenses) as sufficient; suggested objective standard‑setting (policies, audits, capital, examinations) rather than only license labels.
+- Consensus: Need for Commission clarity and for a framework that permits competition while ensuring safety.
+- Disagreement: Whether the SEC should limit QC to bank/broker dealer types or formally expand to include state trust charters and selected nontraditional licensees under conditions.
+
+Topic C — Principles‑based / technology‑neutral standards vs prescriptive rules
+- Viewpoints:
+  - Majority supported a principles‑based approach: avoid mandating specific technologies (MPC vs multisig, hot/cold ratios) because technology evolves rapidly (Jason, Tammy, Mark, Rachel).
+  - Some stressed the immediate commercial need for clarity even if limited: "clarity, not more regulation." (Baylor) — industry wants near‑term, actionable guidance.
+- Consensus: Principles + objective standards (audits, controls, disclosure) favored over prescriptive technology rules.
+- Disagreement: Some urged clearer expectations for audits and independent QC recognition earlier rather than long, slow rulemaking.
+
+Topic D — Omnibus wallets vs segregated wallets; netting/movement tradeoffs
+- Viewpoints:
+  - Pro‑omnibus (netting / less movement): Mark Greenberg and others argued that omnibus netting reduces on‑chain movement and lowers exploit risk. They favor operational models that reduce asset movement.
+  - Pro‑segregation / transparency: Others highlighted transparency and verifiability advantages of segregated wallets and proof‑of‑reserves techniques (Merkle trees), but acknowledged operational cost and liquidity tradeoffs.
+- Consensus: No single right answer — tradeoffs exist; disclosure and standards must reflect chosen architecture. Audits and cryptographic proofs can aid omnibus models.
+- Disagreement: Whether omnibus wallets should be allowed generally for broker‑dealer custody of crypto securities (Chairman and others flagged increased risk).
+
+Topic E — Proof of exclusive control / audits / "How do you prove a negative?"
+- Viewpoints:
+  - Industry: You can’t literally "prove a negative" re: private key copies, but control can be demonstrated by audited key ceremonies, contracts, operational evidence, on‑chain verification, and independent SOC / code audits (Terrence, Jason, BitGo).
+  - Regulators: Want clarity as to what evidence suffices; suggested audits, contracts, third‑party verification will be important.
+- Consensus: Audits (SOC/crypto‑specific), contracts and on‑chain proofs (where applicable) are viable evidence buckets; regulators should define acceptable attestations.
+- Disagreement: None fundamental; more discussion around which types of audits/reports suffice.
+
+Topic F — Self‑custody for advisers / funds vs third‑party qualified custody
+- Viewpoints:
+  - Pro‑self‑custody (conditional): Several argued advisers with capability should be allowed, particularly where no qualified custodian exists for particular asset types — with strict safeguards, disclosure and exams (Neil, Chuck, Ryan, Larry).
+  - Caution (keep qualified custodian preference): Some advocates of QC caution about insolvency/examination/resolution differences and argued QC retains important investor protections (Susan, Rachel).
+- Consensus: Self‑custody can be an option for advisers in some circumstances but must be accompanied by strong, principles‑based controls, audits, disclosure and regulator awareness.
+- Disagreement: Extent and conditions of safe self‑custody; whether regulators should require QC in all cases.
+
+Topic G — Staking, DeFi, tokenized securities, smart-contract custody
+- Viewpoints:
+  - Staking and active, productive uses are economically valuable; advisers may need to engage to fulfill fiduciary duty (Justin Browder’s argument: duty to pursue client interests may require staking).
+  - Custody rules struggle to accommodate staking because staking often requires moving assets on‑chain (which may not be compatible with "custody" as historically framed); some suggested safe harbors or bespoke accommodations.
+  - Smart‑contract custody: Possible but functionally someone (an address/key) will control actions — that party becomes the effective custodian; immutable/disposable keys raise operational and governance questions.
+- Consensus: Staking/delegation/DeFi pose unique custody challenges; regulators should consider targeted relief or clarifying guidance; technological solutions (MPC, tokenized staking-as-a-service) are evolving and could be accommodated under principles‑based rules.
+- Disagreement: Whether staking must be foreclosed for advisers under custody rules or accommodated by non‑exclusive safe harbors.
+
+Topic H — Insolvency/resolution protections (SIPA, customer protections, UCC Article 8)
+- Viewpoints:
+  - Many panelists called out gaps in SIPA/CIPC protections when assets are not securities or when custody models differ from traditional custody. Some suggested Congress may need to act to extend SIPA‑like protections to certain crypto assets.
+  - Several recommended explicit adoption / encouragement of UCC Article 8 (or new Article 12) provisions to clarify entitlements and perfection by control; Chuck Mooney in particular advocated Article 8 / Article 12 adoption.
+- Consensus: Insolvency/resolution protections are a major unresolved policy question and require interagency and/or legislative work.
+- Disagreement: Some stressed the need for immediate SEC staff guidance; others thought Congressional action will be necessary for SIPA changes.
+
+4. MEETING CONCLUSION
+Overall outcome:
+- No final rule or change was adopted at the meeting. The SEC used the roundtable to gather inputs and public perspectives from operators, custodians, counsel, academics, and fund managers to inform possible next steps.
+- The Commission emphasized investor protection as the North Star, insisted on preserving custody rule's protective intent, and signaled openness to exploring qualified custodian definitions, technology‑neutral principles, and interagency coordination.
+
+Action items / next steps mentioned or implied:
+- SEC invited continued input: public written submissions to the Crypto Task Force (Chair and staff explicitly asked for written input and meetings) and public participation in future roundtables (tokenization roundtable upcoming). (Transcript: closing remarks encouraging comments and use of the crypto task force website.)
+- The staff will consider:
+  - Clarifying who may qualify as a qualified custodian (possible recognition of state trust charters and specified firms that meet standards), and whether “QC” can be defined by objective standards.
+  - Developing principles‑based standards and supervisory / exam expectations (audits, documentation, contracts, KYC/AML, controls, key generation/audit trails) that can be applied regardless of underlying technology.
+  - Exploring interactions with SIPA/insolvency and UCC Article 8 (or Article 12) for clarity on entitlements and recovery in failures.
+  - Considering how staking and smart‑contract custodial models could be addressed (either by safe harbors, guidance or rule changes).
+
+Key takeaways for practitioners / stakeholders:
+- Prepare concrete, written submissions illustrating how different custody models can achieve the SEC’s investor protection goals (audits, proof of control, contractual safekeeping promises, independent custody structures, resolution arrangements).
+- Expect the SEC to favor technology‑neutral, principles‑based outcomes accompanied by objective, demonstrable controls (audits, reporting, independent verification).
+- Insolvency/resolution gaps (SIPA, purchaser protections) may require legislative / interagency attention — firms should engage with policymakers as well as the SEC.
+
+5. KEY POINTS AND MAIN ARGUMENTS / SIGNIFICANT EVENTS
+Important points made (selected, with transcript quotes and context):
+- SEC framing: "Existing SEC custody rules are a gold standard of investor protection." — Chairman Atkins framed the baseline and warned against diluting protections if a separate crypto regime is introduced. [Transcript]
+- Need for clarity (industry): "We don't need more regulation. What we need is clarity." — Baylor Meyers (BitGo) asked for firm, public recognition of qualified custodial pathways rather than reliance on law‑firm opinion letters. [Transcript]
+- Principles > prescriptive technology: Multiple panelists warned against prescriptive technical ratios (hot/cold) because technology evolves rapidly: "The best technology is going to move faster than the rules can be written... so we absolutely have to make sure that we're allowing broker dealers and everyone to use the best technical solutions out there." — Panel discussion (multiple speakers) advocated technology neutrality. [Transcript]
+- Demonstrating control: Industry recommended evidence of control via audited key ceremonies, contracts, SOC / crypto audits, and on‑chain verification where applicable: "Custodians have the ability to demonstrate control... having those audited... reports you can provide to your clients or your regulator." — Terrence Dempsey (Fidelity). [Transcript]
+- Omnibus vs segregated tradeoff: Kraken (Mark): "The less crypto moves around, the less people have to approve things... Less movement means less likelihood of issues." [Transcript] — tradeoff between liquidity/efficiency and exploit risk.
+- Self‑custody for advisers: Panel 2 strongly debated whether advisers should be permitted to self‑custody. Views ranged from conditional allowance (with audits and disclosure) to caution due to insolvency and resolution differences. Chuck, Neil and others argued for opening the option for qualified advisers. [Transcript]
+- Staking challenge: Staking may conflict with custody rules because staking often requires moving assets onchain. Justin Browder argued fiduciary duty may require advisers to be able to stake for clients. Regulators will need to reconcile custody rules with productive on‑chain uses. [Transcript]
+- Insolvency / SIPA gap: Several panelists noted that customer‑protection regimes like SIPA don't clearly cover non‑security crypto assets; some suggested legislative change may be needed to provide SIPA‑like protection for tokenized assets. [Transcript]
+- Smart‑contract custody: Participants agreed that "someone” — an address/key — controls smart contracts; governance of that control defines the effective custodian, raising questions about how to treat smart‑contract custody legally. (Panelists including Veronica, Jason, Chuck.) [Transcript]
+- Evidence and contracts as data points: Fireblocks’ view: contracts and the terms are a useful indicator of custody relationship (are you providing safekeeping promise or SaaS?). "Why don't we have a look at the contract... that's another data point that can help broker dealers establish who is in possession or control." — Jason Allegrante. [Transcript]
+
+Significant moments/events:
+- Chairman Atkins’ public first appearance as Chair at the event (noted in opening) and his clear statement of priorities (gold standard custody rule; caution about creating inferior regime) shaped the meeting.
+- Exchange bankruptcy and loss examples (FTX, Bybit) invoked repeatedly as cautionary examples that catalyze calls for clearer custody standards and third‑party independent custody.
+- Repeated panel consensus for a principles‑based approach combined with objective auditorily evidence and disclosure (audits, contracts, proof‑of‑reserves, Merkle trees).
+
+6. APPENDIX (abbreviated)
+- Appendix A (speaker activity snapshot — qualitative):
+  - High activity & influence: Chairman Atkins (SEC), Jason Allegrante (Fireblocks), Rachel Anderica (Anchorage), Mark Greenberg (Kraken), Susan G. Brown (legal), Larry Florio (1KX).
+  - Medium activity & influence: Baylor Meyers (BitGo), Tammy Win (Copper), Veronica McGregor (Exodus), Justin Browder (Simpson Thacher), Neil Matra (Decert), Chuck Mooney (UPenn/ULC), Terrence Dempsey (Fidelity).
+  - Low activity or one‑off: Richard Gabbert (host), various commissioner remarks (Krenshaw, Pur, Ua), other panelists with shorter turns.
+- Appendix B (key regulatory references suggested in meeting):
+  - Investment Advisers Act Rule 206(4)-2 (custody rule) — repeatedly referenced as baseline for adviser custody obligations (Chairman and panelists).
+  - Securities Investor Protection Act (SIPA) / SIPC protections — discussed as inadequate or unclear for non‑security crypto assets.
+  - UCC Article 8 / Proposed Article 12 — legal mechanism to clarify ownership/perfection by control for tokenized assets (discussed by Chuck Mooney).
+  - SEC safeguarding proposal (prior SEC proposal referenced as relevant input/tool).
+  - RAG background: See SEC staff speeches and previously filed public comments (RAG results include speeches like "Lava and Lamps: Opening Remarks..." and public input documents).
+
+7. RECOMMENDATIONS (inferred from meeting + common regulatory practice)
+- SEC should work toward an explicit, public, technology‑neutral set of principles and supervisory expectations for crypto custody, including:
+  - Objective evidence buckets that constitute "control" (contracts with safekeeping promise, audited key ceremonies and SOC/crypto audits, on‑chain proofs where available).
+  - Minimum (but technology‑neutral) controls: segregation/recordkeeping, third‑party audits, independent verification, capital/resolution considerations for custodians, surprise exams where applicable.
+  - A transparent approach to qualifying state‑chartered trust companies and other licenced custodians (set explicit criteria rather than leave reliance on lawyer opinion letters).
+  - Targeted guidance on staking and DeFi interactions (e.g., when adviser engagement is permitted and what compensating controls are required).
+  - Interagency coordination on insolvency/resolution protections for token assets (SIPA gaps) and consideration of UCC Article 8 / Article 12 adoption.
+
+8. LIMITATIONS / NOTES
+- This report is based on the provided full transcript text and SEC meeting page metadata. Quantitative speaker metrics (exact speaking time / word counts) were not computed; activity ratings are qualitative and supported by repeated, long turns visible in the transcript.
+- Some speaker affiliations / titles were taken from the SEC meeting page parsed earlier; where transcripts gave partial firm names or shorthand, the meeting page fill‑ins were used for accuracy.
+
+9. SOURCES (full)
+- SEC meeting page (panelist list and event metadata): "Crypto Task Force Roundtable — Know Your Custodian: Key Considerations for Crypto Custody" — SEC.gov. (Parse_url output used; full page: https://www.sec.gov/newsroom/meetings-events/know-your-custodian-key-considerations-crypto-custody) [parse_url]
+- Full meeting transcript (file provided): april_28_2025.txt — transcript content used for all quoted material and speaker turn analysis. [Transcript file]
+- RAG search results used for regulatory context: e.g., SEC speeches and prior staff guidance (example: "Lava and Lamps: Opening Remarks for Crypto Custody Roundtable" — referencing earlier SEC remarks and contextual background). [RAG search result 1]
+- Additional internal references / prior SEC proposals mentioned during meeting: safeguarding proposal and special purpose broker‑dealer guidance (referenced in transcript; see SEC site for formal text).
+
+If you want I can:
+- Produce a quantitative speaker activity appendix (word counts, turn counts, distributions) by parsing the transcript and returning a table for each speaker.
+- Draft a short, practical checklist for custodians and advisers (audits, contracts, disclosure language, technical best practices) keyed to the principles discussed at the roundtable to implement recommended controls.
+- Prepare suggested language (draft SEC staff guidance points) the Commission could use in a principles‑based custodial guidance release (auditable controls, evidence of control, qualified custodian criteria, self‑custody conditions, staking safe harbor language).

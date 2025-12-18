@@ -29,7 +29,7 @@ class AgentState(TypedDict):
 @tool
 def rag_search(
     query: str,
-    top_k: int = 10,
+    top_k: int = 5,
     alpha: float = 0.5,
     score_threshold: float = 0.5
 ) -> str:

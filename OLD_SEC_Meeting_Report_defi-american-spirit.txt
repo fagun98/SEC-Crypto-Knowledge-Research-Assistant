@@ -1,0 +1,301 @@
+SEC ROUND TABLE MEETING REPORT
+Meeting analyzed:
+- Meeting page (SEC): https://www.sec.gov/newsroom/meetings-events/defi-american-spirit (parse_url returned 403; page examined via SEC press releases / speeches; see Sources)
+- Transcript file used: june_9_2025.txt (full transcript provided by user — primary source for speaker quotes and turn-level analysis)
+
+1. EXECUTIVE SUMMARY
+- Event: SEC Crypto Task Force roundtable entitled “DeFi and the American Spirit” (June 9, 2025).
+- Purpose: Final roundtable in a series to inform the SEC’s approach to crypto regulation by focusing on decentralized finance (DeFi) — defining DeFi, identifying where securities/regulation attach, and balancing protection with innovation.
+- Format: Opening remarks by SEC leadership (Chairman and Commissioners), moderated panel (Troy Paradus), multi‑disciplinary panelists (industry technologists, entrepreneurs, academics, investors), audience Q&A. On-the-record, livestreamed.
+- High‑level outcome: No binding regulatory pronouncements; Chairman Atkins announced staff-level direction to explore an “innovation exemption” (conditional exemptive relief) and directed staff to examine fit‑for‑purpose rulemaking and accommodations for on‑chain markets. The roundtable surfaced a set of recurring policy tradeoffs and concrete technical/legal issues that the SEC and industry need to address jointly (definitions, custody, activity‑based regulation, disclosure vs. fraud enforcement, stablecoins, interoperability, privacy/identity solutions). Multiple participants urged rulemaking that is careful, legally grounded, and informed by technical realities.
+
+2. KEY SPEAKERS ANALYSIS
+(Ordered by prominence / amount of participation in transcript. Ratings 1–10. Activity level = number of substantive speaking turns / relative time; “Argument Strength” rates clarity, evidence, and persuasiveness of arguments on panel themes.)
+
+A. Chairman Atkins (referred to as “Chairman Atkins” in transcript)
+- Affiliation: Chairman, U.S. Securities and Exchange Commission (transcript).
+- Influence Rating: 9/10 — institutional authority; set agenda; announced staff direction.
+  - Justification: Opened the roundtable, framed the “American spirit” theme, and explicitly directed staff to consider regulatory options (innovation exemption). His remarks framed the regulatory balance and provided concrete direction.
+- Activity Level: Low (single formal opening statement ~7–10 minutes) but high impact.
+- Argument Strength: 8/10 — clear policy framing, cited specific staff actions requested.
+- Key Contributions:
+  - Policy framing that balances investor protection with innovation.
+  - Announced: “I’ve directed the staff to consider a conditional exemptive relief framework or … an innovation exemption” (transcript).
+  - Called for fit‑for‑purpose rules and staff exploration of rule amendments to accommodate on‑chain markets.
+- Transcript citations: Opening remarks (june_9_2025.txt, opening section).
+
+B. Commissioner Krenshaw (referred to as “Commissioner Krenshaw”)
+- Affiliation: Commissioner, SEC (transcript).
+- Influence Rating: 7/10 — emphasized legal process and formal rulemaking.
+  - Justification: Framed the need for legally sound, deliberate rulemaking (notice-and-comment).
+- Activity Level: Low (one formal statement), medium impact.
+- Argument Strength: 8/10 — emphasized rulemaking and methodical approach.
+- Key Contributions:
+  - Caution that complexity requires careful, legally sanctioned rulemaking rather than rushing to quick fixes.
+  - Emphasized the commission should “grapple with the tough questions through the legally sanctioned process of formal rulemaking.”
+- Transcript citations: Commissioners’ opening remarks section.
+
+C. Commissioner Uyeda (referred to as “Commissioner Ua” / “Commissioner Uea” in transcript)
+- Affiliation: Commissioner, SEC (transcript).
+- Influence Rating: 7/10 — focused on engagement & transparency, encouraged patience.
+- Activity Level: Low (one formal statement).
+- Argument Strength: 7/10 — strong on process and the need for engagement.
+- Key Contributions:
+  - Noted DeFi is not monolithic; highlighted market structure, transparency, and investor protection issues; encouraged continued public engagement.
+- Transcript citations: Opening remarks.
+
+D. Commissioner Pur (referred to as “Commissioner Pur” in transcript)
+- Affiliation: Commissioner, SEC (transcript).
+- Influence Rating: 8/10 — consistently advocated for protection of code as speech and self‑custody; stressed First Amendment considerations.
+  - Justification: Framed the “self‑custody” and “code as speech” legal constraints repeatedly referenced by panelists.
+- Activity Level: Low (one formal statement) but influential in framing constitutional limits.
+- Argument Strength: 8/10 — well‑argued balancing of First Amendment and regulatory reach.
+- Key Contributions:
+  - “The right to have self‑custody of one's private property is a foundational American value…”
+  - Emphasized limits on SEC authority when claims would impermissibly regulate publication of code (First Amendment).
+  - Cited EtherDelta/Coburn facts as useful background for how centralized characteristics mattered.
+- Transcript citations: Commissioner Pur opening remarks; Coburn/EtherDelta discussion.
+
+E. Moderator Troy Paradus / Paradus / Parades (referred to as “Troy”)
+- Affiliation: Moderator (former commissioner is mentioned in transcript; transcript uses Troy Parades/Paradus in multiple places).
+- Influence Rating: 8/10 — high procedural and conversation control.
+  - Justification: Ran the session, directed sequence of panelist interventions, framed questions.
+- Activity Level: Very high — moderated, asked many questions, directed Q&A.
+- Argument Strength: N/A (moderator role). Effective at eliciting diverse viewpoints and definitions.
+- Key Contributions:
+  - Structured panel rounds (short opening comments, then deeper Q&A), curated audience questions.
+
+F. Rebecca (panelist; identifies affiliation during transcript)
+- Affiliation: Transcript identifies Rebecca and that “at Geto Labs they are building…” (transcript). (Transcript shows “at Geto Labs they are building DeFi…” — use transcript as source for affiliation.)
+- Influence Rating: 8/10 — frequent, substantive contributions; set definitional and activity‑based approach.
+  - Justification: Early substantive definition of DeFi and recommended activity‑based regulatory focus; offered three risks (cyber, system‑management, illicit finance).
+- Activity Level: High — multiple substantive turns across the panel; significant speaking time.
+- Argument Strength: 8/10 — clear, structured, evidence‑oriented; proposed practical regulatory lens (“activities”).
+- Key Contributions:
+  - Defined DeFi: “a blockchain‑based open software system that allows users to engage in economic transactions in a self‑directed and entirely self‑custodial manner…” (transcript).
+  - Urged focus on activities rather than trying to crisply define “decentralization.”
+  - Highlighted three central risks for DeFi: cyber risk, system management risk, illicit finance risk.
+- Transcript citations: Rebecca’s opening panel remarks.
+
+G. Peter (panelist; likely Coin Center / public‑interest tech policy — transcript indicates affiliation with Coin Center)
+- Affiliation: Peter (Coin Center reference in transcript — he references “Coin Center” in his remarks).
+- Influence Rating: 7/10 — strong constitutional (speech) framing, active in Q&A.
+  - Justification: Articulated First Amendment constraints and the limits on prior restraints.
+- Activity Level: High — multiple interventions.
+- Argument Strength: 8/10 — persuasive on speech protection and utilitarian hierarchy of values.
+- Key Contributions:
+  - Argued “code is protected speech” and cautioned against prior restraints: “There is a right to publish code…my right to publish code trumps the risk that that code creates” (paraphrased; transcript statements on First Amendment).
+  - Emphasized the need to distinguish publishing code vs. operating/administrating platforms.
+- Transcript citations: Peter’s remarks on First Amendment.
+
+H. Eric (panelist — entrepreneur / technologist)
+- Affiliation: Not explicitly stated in transcript beyond panelist status; described DeFi as “rule of law machine.”
+- Influence Rating: 7/10 — promoted a pro‑innovation view; argued smart contracts enforce rules impartially.
+- Activity Level: Medium–High — several substantive turns.
+- Argument Strength: 7/10 — rhetorically strong about benefits, somewhat optimistic about tech solving regulatory problems.
+- Key Contributions:
+  - Framed smart contracts as “machines of perfect regulation” (later tempered) and emphasized permissionless innovation; argued regulators should “stand in awe” before breaking systems.
+  - Emphasized markets’ emergent solutions to failures (e.g., decentralized exchanges vs. centralized failures).
+- Transcript citations: Eric’s panel comments.
+
+I. Jill Gunter (panelist)
+- Affiliation: Co‑founder, Espresso Systems (stated in transcript).
+- Influence Rating: 7/10 — technical and empirical perspective; stressed modularity and resilience.
+- Activity Level: High — multiple substantive interventions.
+- Argument Strength: 8/10 — used real examples (FTX collapse) to show DeFi resilience and pointed to modular architecture and interoperability.
+- Key Contributions:
+  - “Watching DeFi hold up under the pressure [of FTX] … was an extraordinary experience.”
+  - Emphasized modular stack (application layer, data availability, privacy layers) and importance of interoperability.
+- Transcript citations: Jill’s remarks.
+
+J. Omid (panelist; author)
+- Affiliation: Author (discussed his book “Rearchitecting Trust” in transcript).
+- Influence Rating: 7/10 — conceptual framing re: trust and architecture.
+- Activity Level: Medium — concise conceptual contributions.
+- Argument Strength: 8/10 — strong intellectual framing: trust as the product of finance; crypto enables rearchitecture.
+- Key Contributions:
+  - “Trust is the only product of the financial services industry” — argued code & cryptography can guarantee outcomes and rearchitect trust.
+- Transcript citations: Omid’s remarks.
+
+K. Kevin (panelist; referenced FinCEN / Fininsson / scenario planning)
+- Affiliation: Not fully specified in transcript; described experience/role in regulatory discussions (FinCEN/FINCEN/Fininsson contexts referenced).
+- Influence Rating: 7/10 — emphasized custody, stablecoins, and scenario planning; raised operational and national security considerations.
+- Activity Level: Medium — multiple substantive interventions.
+- Argument Strength: 8/10 — practical, scenario‑oriented; emphasized custody and stablecoins and need for interagency planning.
+- Key Contributions:
+  - Stressed that stablecoins are essential to DeFi but often custodial; scenario planning required for systemic outcomes.
+  - Urged regulators to think about “what if DeFi scales to dominate capital markets.”
+- Transcript citations: Kevin’s remarks.
+
+L. Michael Jordan (investor / asset manager)
+- Affiliation: Investor / asset manager (described investing viewpoint in transcript).
+- Influence Rating: 7/10 — investor perspective: “tokens are broken,” need for governance & disclosure.
+- Activity Level: Medium — multiple contributions.
+- Argument Strength: 7/10 — practical view from capital allocation perspective: market design and disclosure needed to allow institutional participation.
+- Key Contributions:
+  - “Tokens are broken for investors, for founders, for users of DeFi systems.”
+  - Called for a “golden bridge” — a compliant path that allows best founders/capital to participate.
+- Transcript citations: Michael Jordan’s remarks.
+
+M. Joe, Gabe, Michael Moer and others (panel participants)
+- Affiliation: Various (Joe = founder; Gabe = legal/regulatory commentator; Michael Moer = former regulatory/industry perspective). Transcript contains multiple shorter, targeted contributions.
+- Influence Rating: 5–7/10 depending on speaker — contributed targeted insights (disclosure, consumer protection, operational risk).
+- Activity Level: Medium–Low (a few turns each).
+- Argument Strength: 6–8/10 — practical suggestions on disclosures, self‑policing, and industry norms.
+
+Most Influential Speaker overall
+- Chairman Atkins — because his opening framed the policy tradeoffs and he gave the clearest staff directive: asking staff to “consider a conditional exemptive relief framework … an innovation exemption” and to explore fit‑for‑purpose rules for on‑chain market activity. That single instruction shapes staff workload and the SEC’s short‑term policy trajectory.
+
+3. VIEWS ON TOPICS
+(For each main topic: succinct summary of perspectives and where consensus/disagreement emerged.)
+
+Topic A — How to define DeFi and decentralization
+- Viewpoints:
+  - Rebecca: practical, activity‑based definition — DeFi as “blockchain‑based open software system” enabling self‑directed, self‑custodial transactions.
+  - Jill: DeFi is now modular (not monolithic); focus on where control sits across layers.
+  - Omid/Kevin/Gabe: prefer functional, architecture and trust‑oriented views.
+- Consensus/Disagreement:
+  - Consensus: a single crisp definition is elusive; regulators should focus on activities and where control rests (who exercises power).
+  - Disagreement: how much emphasis to put on self‑custody vs. practical, “peer‑to‑pool” reality. Some panelists noted that much DeFi is peer‑to‑pool and intermediate-like behavior emerges.
+
+Topic B — Activities‑based regulation vs. technology/actor‑based rules
+- Viewpoints:
+  - Rebecca, Michael Jordan, Jill: favor an activities‑based approach (focus on what is being done — custody, execution, order routing).
+  - Peter, others: emphasize constitutional limits (First Amendment) on regulating code publication; but accept regulating actors who operate, custody, or administer systems.
+  - Some (e.g., regulator speakers) emphasized necessity of rulemaking and legal process to clarify jurisdiction.
+- Consensus/Disagreement:
+  - Consensus: activity‑based approach is practically useful; publication of code alone should not be actionable.
+  - Disagreement: degree of legal certainty needed and whether bright‑line rules or principles should be used. Some panelists warned against over‑broad disclosure mandates; others urged targeted disclosure for material off‑chain agreements.
+
+Topic C — Custody / self‑custody and the role of intermediaries
+- Viewpoints:
+  - Commissioner Pur, Rebecca, Kevin: self‑custody is fundamental; custody status materially changes regulatory posture.
+  - Kevin and others: stablecoins (largely custodial) are critical infrastructure and raise systemic and regulatory questions.
+  - Some panelists: real‑world mixes exist (partial custody, frontends, multi‑sig actors).
+- Consensus/Disagreement:
+  - Consensus: custody is a critical determinant of risk and regulatory reach.
+  - Disagreement: whether custodial stablecoins should be the primary legal path for on‑chain markets (some saw custody requirement as practical but constraining to DeFi).
+
+Topic D — Code as speech / First Amendment constraints
+- Viewpoints:
+  - Peter and others strongly argued publication of code is protected speech and regulators should avoid prior restraints; enforcement is appropriate for behavior (operation/custody) not mere publication.
+  - Others cautioned that actors often blur lines by operating/maintaining protocols and may be regulable.
+- Consensus/Disagreement:
+  - Consensus: distinct line between publishing code and operating/administrating a service — regulators should be careful before treating pure publication as a regulated act.
+  - Disagreement: precise legal tests and how enforcement cases should be framed (e.g., Low v. SEC analogies discussed).
+
+Topic E — Disclosure vs. enforcement (fraud) as regulatory tools
+- Viewpoints:
+  - Many panelists (Gabe, Michael Jordan, Jill, Rebecca) support targeted disclosure of material off‑chain agreements (market‑maker deals, subsidies, governance powers).
+  - Others (Eric, Peter) warned that heavy, formalized disclosure obligations can be costly and stifle innovation; preferred fraud/anti‑misrepresentation enforcement in many cases.
+- Consensus/Disagreement:
+  - Consensus: transparency is valuable; many industry-led disclosure tools already exist (e.g., L2Beat, DeFi dashboards).
+  - Disagreement: whether disclosure mandates are the best, least‑cost instrument vs. fraud‑based enforcement and private law remedies.
+
+Topic F — Risks: cyber, governance, illicit finance, systemic scaling
+- Viewpoints:
+  - Rebecca: cyber risk is primary; system management and illicit finance are additional risks.
+  - Kevin, Jill: emphasized operational and privacy risks; suggested tech remedies (zero‑knowledge proofs) and activity‑based detection.
+  - Several urged scenario planning for “if DeFi scales to broader capital markets.”
+- Consensus/Disagreement:
+  - Consensus: cyber/operational risks are central; need for mitigation like audits, safe harbors for white‑hat response, privacy enhancing tech.
+  - Disagreement: the level of regulatory intrusion necessary to solve those risks.
+
+Topic G — Stablecoins and interoperability
+- Viewpoints:
+  - Kevin and others: stablecoins are essential to DeFi; most large stablecoins are custodial and will be regulated — which affects DeFi operation.
+  - Jill and others: emphasized interoperability and modular infrastructure as key for scalability and safety.
+- Consensus/Disagreement:
+  - Consensus: stablecoins are central; their regulatory treatment will materially affect DeFi’s evolution.
+  - Disagreement: extent to which custody requirements for legal stablecoins will limit DeFi or drive innovation to alternative (non‑custodial) designs.
+
+4. MEETING CONCLUSION
+- Overall outcome:
+  - No final rules announced. Major outcome: policy framing and staff direction (Chairman Atkins) to explore a “conditional exemptive relief framework” / “innovation exemption” and to consider fit‑for‑purpose rule amendments. Commissioners reiterated need for careful rulemaking and public input.
+  - The roundtable functioned as a cross‑stakeholder information gathering and boundary‑setting exercise, surfacing technical issues regulators must consider.
+- Action items / next steps mentioned:
+  - SEC staff directed to consider a conditional exemptive relief framework to allow on‑chain market experiments subject to conditions (Chairman Atkins; transcript).
+  - Continued public engagement: commissioners and task force invited written comments and meetings (crypto task force website crypto.se.gov referenced in transcript).
+  - Implicit next steps: (a) staff technical/legal analyses on custody, activities test, and constitutional constraints; (b) scenario planning for large‑scale DeFi adoption (systemic/market structure implications); (c) working with industry on disclosure frameworks and identity/privacy tech (zero‑knowledge proofs).
+- Key takeaways:
+  1. DeFi is technically complex and heterogeneous; regulatory approaches must recognize a spectrum of decentralization.
+  2. Activity‑based regulation (who does what) is pragmatically useful; custody status is a key dividing line.
+  3. Constitutional limits (code as speech) matter — publishing code should not be a prior restraint, but operating/administrating can be regulated.
+  4. The SEC is actively exploring staff options, including an “innovation exemption,” but will proceed through careful legal processes (notice and comment).
+  5. Industry self‑policing, modular technical architectures, and advanced privacy/identity tech (ZK proofs, verifiable credentials) are central tools — regulators should consider technological solutions as part of runbooks.
+
+5. KEY POINTS AND MAIN ARGUMENTS / SIGNIFICANT MOMENTS
+(Representative list; direct quotes and paraphrases taken from the transcript)
+
+A. Chairman policy direction (significant moment)
+- Quote: “I’ve directed the staff to consider a conditional exemptive relief framework or let's call it an innovation exemption that would expeditiously allow registrants to bring on‑chain products and services to market.” — Chairman Atkins (transcript).
+- Significance: concrete staff instruction that will shape near‑term rule/drafting work.
+
+B. Definition & regulatory lens
+- Rebecca: clear activity lens — “I typically define DeFi as a blockchain‑based open software system that allows users to engage in economic transactions in a self‑directed and entirely self‑custodial manner...” — argued we should regulate activities, not code publication.
+- Significance: shaped much of the panel’s follow‑on discussion.
+
+C. First Amendment and code
+- Peter (Coin Center): “Code is protected speech. The SEC must not infringe on First Amendment rights by regulating someone who merely publishes code… If somebody else subsequently violates the law using the software protocol, the user, not the developer of the software, should face the music.” (transcript).
+- Significance: legal guardrail against overly broad SEC reach; repeated by multiple panelists.
+
+D. Custody as regulatory hinge
+- Commissioner Pur & multiple panelists emphasized non‑custodial/self‑custody as a defining feature of DeFi and a decisive factor for regulatory treatment: “The right to have self‑custody of one's private property is a foundational American value” (transcript).
+- Significance: custody status repeatedly raised as one of the strongest bright‑line factors.
+
+E. Activity / risk triage
+- Rebecca: highlighted three central risks (cyber, system management, illicit finance) and that they should drive regulatory attention and mitigation strategies (transcript).
+- Significance: triage suggests regulators prioritize cyber/operational risk mitigation and rely on newer technical detection solutions.
+
+F. DeFi resilience example (FTX)
+- Jill: recounted watching DeFi manage liquidations during FTX collapse — “DeFi stood up … watching DeFi hold up under the pressure … was an extraordinary experience.” (transcript).
+- Significance: empirical evidence that permissionless systems can reduce certain centralized failure modes.
+
+G. Disclosure vs fraud debate
+- Michael Jordan and Gabe argued for clearer disclosure of off‑chain material arrangements (e.g., market‑maker deals) and for a “golden bridge” for compliant projects; Eric and others warned that onerous disclosures could stifle small innovators.
+- Significance: ongoing tension between mandatory disclosure vs. fraud‑based enforcement or industry self‑policing.
+
+H. Stablecoins & systemic scope
+- Kevin: stablecoins are essential to DeFi; their regulatory posture (custodial vs non‑custodial) will shape DeFi’s practical fate. He urged scenario planning if DeFi scales to core capital markets.
+- Significance: stablecoins are both an enabler and potential regulatory choke point.
+
+I. Technology solutions (privacy & identity)
+- Michael Moer / other panelists proposed privacy‑enhancing techniques and zero‑knowledge proofs as ways to verify status (e.g., accredited investor, age) at transaction speed without disclosing PII — a recurring technical remedy to reconcile privacy and compliance.
+- Significance: points to technology as part of regulatory solutions.
+
+J. Notable legal case references used to illustrate boundaries
+- EtherDelta / Coburn settlement used to show how centralized attributes of a purported DeFi system triggered SEC enforcement (Commissioner Pur referenced this).
+- Low v. SEC jurisprudence was discussed as an analogy for publication vs. conduct regulation.
+
+6. SOURCES
+Primary:
+- Transcript: june_9_2025.txt (complete meeting transcript provided by user) — primary and cited throughout for quotes and turn‑level analysis.
+
+SEC public materials (used for context and confirmation):
+- SEC press release listing roundtable(s) and panelists:
+  - “SEC Announces Agenda, Panelists for Roundtable on Crypto DeFi” — SEC press release (2025‑78). (Found via SEC site / rag_search: https://www.sec.gov/newsroom/press-releases/2025-78-sec-announces-agenda-panelists-roundtable-crypto-defi) — used to corroborate panel structure and SEC program (note: parse_url on meeting page returned 403; press release pages were accessible via RAG search).
+- SEC speeches/statements related to the event:
+  - “Remarks at the Roundtable on DeFi and the American Spirit” — Commissioner Mark T. Uyeda (June 9, 2025). (RAG result: https://www.sec.gov/newsroom/speeches-statements/uyeda-remarks-defi-roundtable-060925)
+  - “DeFining the American Spirit” — Commissioner Hester M. Peirce remarks (June 9, 2025). (RAG result: https://www.sec.gov/newsroom/speeches-statements/peirce-remarks-defi-roundtable-060925)
+  - “Remarks at the Crypto Task Force Roundtable on Decentralized Finance” — Paul S. Atkins (June 9, 2025) (RAG result: https://www.sec.gov/newsroom/speeches-statements/atkins-remarks-defi-roundtable-060925)
+  - These SEC speech pages were used to corroborate Commissioners’ positions where they appear in the transcript.
+
+Supplementary / context references (RAG search used during analysis):
+- EtherDelta settlement and enforcement context referenced in transcript:
+  - “DeFining the American Spirit” (Peirce remarks include EtherDelta discussion) (see Peirce remarks link above).
+- Wintermute and other industry filings (sample RAG results used to inform context of industry comments):
+  - Wintermute response to SEC request for comment (SEC site PDF referenced in rag_search results).
+  - Crypto Task Force press releases on additional roundtables (SEC press release id 2025‑57).
+
+Notes on methodology and limits
+- Primary analysis is based on the full transcript provided by the user (june_9_2025.txt). The parse_url tool returned a 403 for the meeting URL; I used SEC press releases / speeches (RAG search results) to corroborate public statements where needed (links above).
+- Where panelists or speakers used only first names in the transcript or used variant spellings in the transcript (e.g., Troy Parades/Paradus; “Commissioner Ua/Uea”), the report uses names exactly as recorded in the transcript and avoids attributing titles not present in the transcript unless the speaker self‑identified. When the transcript explicitly stated an affiliation (e.g., “co‑founder of Espresso Systems” for Jill), that affiliation is cited in this report.
+- Influence/activity/argument strength ratings are qualitative judgments based on number of turns, apparent speaking time, role (Chair vs panelist), and the content strength in the transcript (clarity, concreteness, citations of legal or technical examples). Time estimates are approximate because the transcript lacks precise timestamps.
+
+If you would like:
+- A speaker index spreadsheet (canonical names, stated affiliations, count of speaking turns, and extracted key quotes by timestamp/line number).
+- A one‑page executive summary or slide deck summarizing policy options the SEC could consider (e.g., bright‑line custody tests, safe harbors, conditional exemptive procedures, disclosure templates vs targeted fraud enforcement).
+- A focused memo on a single question raised repeatedly in the meeting (e.g., “How to operationalize an activities‑based regulatory test for DeFi” or “Draft elements for a De‑Minimis Innovation Exemption”), I can draft that next with citations to the transcript and relevant SEC materials.
+
+Prepared by: SEC Round Table Meeting Analyst (analysis based on the provided transcript and SEC public materials located with RAG search)
+Date of analysis: (based on transcript date June 9, 2025)

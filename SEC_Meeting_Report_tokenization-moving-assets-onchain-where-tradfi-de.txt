@@ -1,0 +1,266 @@
+SEC ROUND TABLE MEETING REPORT
+Meeting: "Crypto Task Force Roundtable - Tokenization: Moving Assets On‑chain: Where TradFi and DeFi Meet"
+Date: May 12, 2025
+Sources:
+- Meeting URL / metadata: SEC meeting page (parse): https://www.sec.gov/newsroom/meetings-events/tokenization-moving-assets-onchain-where-tradfi-defi-meet (parsed content listing panelists & meeting metadata) (parse_url output)
+- Full transcript: may_12_2025.txt (complete transcript provided by user)
+- SEC staff accounting bulletin rescission (context cited during meeting): Staff Accounting Bulletin No. 122 rescinding SAB 121 (SEC.gov) (from RAG search) — https://www.sec.gov/rules-regulations/staff-guidance/staff-accounting-bulletins/staff-accounting-bulletin-122 (rag_search result)
+- Additional internal transcript references (examples and quotes cited below): may_12_2025.txt
+
+Note on methodology
+- I parsed SEC meeting page for official metadata (panelist list, date, time) via parse_url and analyzed the full transcript you supplied (may_12_2025.txt) to extract speakers, contributions, topics, arguments, and outcomes.
+- Ratings (Influence, Activity, Argument Strength) are based on measurable factors visible in the transcript (length/content of remarks, leadership role, authoritative position, specificity and evidence in arguments, requests for concrete next steps) and justified with transcript quotes.
+- All quotes below are verbatim from the provided transcript and cited to the transcript file.
+
+1. EXECUTIVE SUMMARY
+This SEC Crypto Task Force roundtable (May 12, 2025) convened Commissioners and a broad set of market participants, service‑providers and industry technologists to discuss tokenization of traditional securities — its opportunities, operational and legal challenges, and possible regulatory approaches. Key themes:
+- Strong industry enthusiasm for tokenization’s potential to improve settlement, collateral utility, operational efficiency, fractional access, and new product structures (examples: tokenized money market products, tokenized yield funds).
+- Commissioners emphasized policy clarity, technology‑neutral principles, and careful calibration: Commissioner Peirce and others advocated for sandboxes/exemptive relief and permissive approaches; Commissioner Crenshaw and others urged caution on system‑level risks (settlement, netting, market resilience) and asked “what problem are we solving?”
+- Concrete near‑term regulatory items discussed: rescission of SAB 121 (staff action already taken was discussed as an enabling step), possible qualified‑custodian rule updates, transfer agent modernization, ATS/market structure modernization, and design of pilot/sandbox/conditional exemptive relief.
+- Divergent views on public permissionless blockchains as market infrastructure: some speakers view them as necessary open infrastructure (and resilient); others raised operational and governance risks that may require regulation or avoidance for system‑critical use.
+Overall outcome: The meeting advanced detailed, pragmatic discussion, produced explicit requests for staff work and public input (including the Crypto Task Force comment portal), and signaled the Commission will pursue a mix of staff guidance, rulemaking/exemptive relief, and pilot programs to test tokenization approaches.
+
+2. KEY SPEAKERS ANALYSIS
+(Only speakers clearly identified in the transcript are listed; affiliations where available are from the SEC meeting page or transcript.)
+
+A. Chairman Atkins — (Chair, U.S. Securities and Exchange Commission)
+- Influence Rating: 10 — As Chair he framed the Commission’s tokenization priorities (issuance, custody, trading) and set the regulatory agenda. His opening keynote established policy direction and called for a “rational regulatory framework.”
+- Activity Level: High — Keynote opening remarks; long, prescriptive address covering rulemaking priorities, staff actions, and coordination with the Administration and Congress.
+- Argument Strength: 8 — Arguments combined practical examples and policy prescriptions; cited specific staff action (rescission of SAB 121) and asked staff to consider guidance/exemptive relief. Justification: He stated specific goals and recommended actions, e.g.: “A key priority of my chairmanship will be to develop a rational regulatory framework for crypto asset markets that establishes clear rules of the road for issuance, custody and trading” (Transcript: may_12_2025.txt).
+- Key Contributions: Framed three priority areas (issuance, custody, trading); announced staff direction (e.g., rescission of SAB 121 referenced as enabling custody options); signaled willingness to use rulemaking, interpretive and exemptive authorities rather than rely primarily on enforcement.
+
+B. Commissioner Crenshaw — (SEC Commissioner)
+- Influence Rating: 8 — Provided a detailed cautionary analysis of tokenization tradeoffs, focusing on system design and settlement mechanics.
+- Activity Level: High — Long, substantive remarks interrogating the definition of tokenization and the consequences of changing settlement cycles and netting.
+- Argument Strength: 9 — Strong, evidence‑based arguments that emphasized statutory obligations and systemic risk: “The settlement cycle… is perhaps a design feature, not a bug… Netting… allows the current system to handle tremendous volume.” (Transcript)
+- Key Contributions: Pressed for an answer to “what are we trying to build?” and urged extreme caution about wholesale changes to settlement/netting, detection/pausing mechanisms for fraud/cybercrime, and the need to preserve investor protections.
+
+C. Commissioner Peirce — (SEC Commissioner; Crypto Task Force lead)
+- Influence Rating: 9 — Vocal proponent of regulatory clarity, sandboxes, and technology‑neutral approaches; chaired task force work referenced multiple times.
+- Activity Level: High — Remarks supporting engagement, disclosure, and a pragmatic approach for integrating tokenization into existing legal framework.
+- Argument Strength: 8 — Articulated the view that “tokenization cannot reach its full potential without legal clarity” and urged treating tokenized securities the same as traditional securities absent compelling reasons otherwise. Supported pilot/sandbox approaches and administrative flexibility.
+- Key Contributions: Advocated for treatment parity (“absent a compelling reason… treat tokenized securities the same as traditionally issued securities”), transfer‑agent modernization, and caution against overreach in staff pronouncements.
+
+D. Commissioner Uyeda — (SEC Commissioner)
+- Influence Rating: 7 — Offered support for seeking public input and noted the regulatory history of technology/regulatory mismatches.
+- Activity Level: Moderate — Remarks highlighted the need to focus on "critical safeguards" and principle‑based regulation.
+- Argument Strength: 7 — Emphasized that technology can assist but regulation should target safeguards rather than every permutation of innovation.
+
+E. Jeffrey (Jeff) Dinwoodie — Moderator (Partner, Cravath, Swaine & Moore LLP) (from parse_url)
+- Influence Rating: 6 — Moderated discussion, framed panelist questions and transitions.
+- Activity Level: High — Led panel structure, timekeeping, and guided Q&A. (Transcript: he asked panelists for 2‑minute opening remarks and moderated both panels.)
+- Argument Strength: N/A (moderator)
+
+F. Key Panelists (selected — all extensively active; affiliation stated when available from parse_url/transcript)
+Note: Activity levels reflect relative quantity/length of remarks seen in transcript.
+
+1) Will Geyer — Head of Capital Markets, Invesco
+- Influence Rating: 7 — Institutional issuer perspective; emphasized operational efficiencies, shareholder communications (dividends, proxy) and risk reduction via shortened settlement.
+- Activity Level: Moderate — Opening remarks and contributions.
+- Argument Strength: 7 — Practical, grounded use cases; advocated for a regulatory sandbox to encourage pilots.
+
+2) Fidelity representative (Digital Asset Management unit) — (name not given in transcript)
+- Influence Rating: 6 — Institutional asset manager viewpoint; emphasized global, 24/7 transfer utility and new investment structures.
+- Activity Level: Moderate — Opening remarks.
+- Argument Strength: 6 — Practical product‑level observations on investor access and product distribution.
+
+3) SuperState representative (unnamed; founder referenced as Robert Leshner in discussion)
+- Influence Rating: 6 — Transfer agent / issuer perspective; emphasized enabling registered ownership, transfer agent role, and optionality for issuers/investors.
+- Activity Level: Moderate
+- Argument Strength: 7 — Focus on choice, compliance embeddings, and non‑disruptive additive models.
+
+4) Eun Ah Choi — Global Head of Regulatory Operations, Nasdaq (from parse_url)
+- Influence Rating: 7 — Exchange/market infrastructure perspective; referenced Nasdaq’s history with crypto ETPs, surveillance, matching engine technology.
+- Activity Level: Moderate — Opening remarks plus Q&A contributions.
+- Argument Strength: 7 — Practical proposals on taxonomy, trading surveillance and market microstructure.
+
+5) Christian Sabella — DTCC (Head of Digital / DTC role — transcript: DTCC speaker)
+- Influence Rating: 8 — Post‑trade infrastructure authority; focus on settlement cycles, netting, collateral mobility, interoperability and eligibility.
+- Activity Level: High — detailed examples of DTCC experiments (Project Ion, collateral mobility experiment), calls for interoperability standards.
+- Argument Strength: 8 — Strong technical and operational arguments grounded in DTCC experiments and industry realities.
+
+6) Sandy Kaul — Franklin Templeton (Digital Asset Unit)
+- Influence Rating: 7 — Practical operator and transfer agent experience; recounted Franklin Templeton’s tokenized money market fund operations since 2022 with cross‑chain deployments.
+- Activity Level: High — shared real‑world production experience and concrete examples (real‑time shareholder accounting).
+- Argument Strength: 9 — Very strong: “We tokenized our money market fund in 2022 … we have not had a single issue” — provided empirical operational evidence for tokenization utility.
+
+7) Johnny Reinsch — Executive Director, Tokenized Asset Coalition
+- Influence Rating: 7 — Industry coalition viewpoint; global interoperability emphasis and balanced regulatory approach.
+- Activity Level: Moderate
+- Argument Strength: 7 — Emphasized composability, standardized global frameworks, and industry coordination.
+
+8) Christine Moy — Apollo
+- Influence Rating: 7 — Institutional investor/market participant viewpoint; emphasized automation, multi‑asset interoperability and product innovation.
+- Activity Level: Moderate
+- Argument Strength: 7 — Practical framing of tokenization as modernization of asset creation/distribution.
+
+9) Robbie Mitchnick — BlackRock (Head of Digital Assets)
+- Influence Rating: 8 — Large asset manager perspective; provided a concrete example: BlackRock tokenized stable value yield product (March 2024) and use‑cases (collateral, liquidity).
+- Activity Level: Moderate‑High
+- Argument Strength: 8 — Strong evidence via firm example; emphasized “same security, same regulatory treatment” principle with caveats.
+
+10) Gene (Permuto Capital / other technology operator) — (surname not fully specified in the excerpt)
+- Influence Rating: 5 — Technology / market product operator perspective; practical examples of fractionation and tax/administration benefits.
+- Activity Level: Moderate
+- Argument Strength: 6 — Practical operational insights into fractional ownership and back‑office automation.
+
+11) Sid (Maple/Defi operator) and others (VCs, operators)
+- Influence Rating: 5–7 — Voice of DeFi/operational liquidity providers; emphasized transparency, settlement flexibility, 24/7 possibilities, and worked examples (private credit pools, collateral reuse).
+- Activity Level: Moderate
+- Argument Strength: 6–8 — Case examples of live product behavior and composability benefits.
+
+Most Influential Speaker overall: Chairman Atkins
+- Reasoning: As SEC Chair, his keynote set the Commission’s priorities (issuance, custody, trading), named staff actions to date (rescission of SAB 121 discussed), called explicitly for rulemaking/interpretive/exemptive work, and framed the regulatory approach (tech‑neutral but proactive). His role and explicit directives to staff make him the most influential speaker in terms of likely policy effect.
+
+3. VIEWS ON TOPICS
+This section identifies the main topics discussed, summarizes differing viewpoints, and notes consensus or disagreements.
+
+Topic A — Definition and scope of tokenization
+- Viewpoints:
+  - Many panelists defined tokenization as a “new file format” / digital wrapper for a security enabling registered ownership, programmability, and composability (e.g., Alex: “tokenization… is just a new file format”; Franklin Templeton: “a token is a wrapper.”) (Transcript).
+  - Some emphasized the spectrum of tokenization — from on‑chain representation with off‑chain legal rights to fully native on‑chain enforcement (spectrum framework referenced).
+- Consensus/Disagreements:
+  - Consensus that tokenized securities are still securities under the securities laws when they represent the same economic and legal rights.
+  - Disagreement about whether tokenization on public permissionless chains is appropriate for system‑critical securities infrastructure — some speakers promoted public chains and open infrastructure; others cautioned about operational/governance risks on permissionless chains.
+
+Topic B — Issuance / Registration: regulatory treatment
+- Viewpoints:
+  - Many (e.g., Commissioner Peirce, BlackRock) urged “same security, same regulatory treatment” as a baseline: tokenization doesn’t change the substance of a security.
+  - Some noted that existing registration forms (Form S‑1, etc.) are not tailored to crypto and that the Commission should explore adjusted forms/exemptions/safe harbors to facilitate registered tokenized offerings.
+- Consensus/Disagreements:
+  - Broadly agreed that legal clarity is needed; disagreement about the extent/pace of adaptation and whether new exemptions or guidance should be created immediately vs. after pilots.
+
+Topic C — Custody and qualified custodian rules
+- Viewpoints:
+  - Chair Atkins cited the rescission of SAB 121 as an important step to remove staff‑level impediments and suggested revisiting who qualifies as a custodian and expanded optionality (Transcript; RAG: SAB 122 rescinded SAB 121).
+  - Many industry participants asked for clarity on qualified custodian eligibility (including recognition of modernized custody and self‑custody models with protections).
+- Consensus/Disagreements:
+  - Consensus that custody rules need review and clarity. Disagreement on whether self‑custody should be broadly permitted, and on how to define “qualified custodian” for tokenized securities.
+
+Topic D — Trading, market structure, and settlement cycles
+- Viewpoints:
+  - Tokenization proponents argued tokenization enables faster settlement, programmable settlement (T+0 options), better collateral utility, 24/7 transferability, and new market primitives (AMMs, improved liquidity, fractionalization).
+  - Cautioning voices (Commissioner Crenshaw, DTCC, others) emphasized netting benefits, liquidity preservation, and that instant settlement may remove important protections (pause, investigation) and could disadvantage retail investors.
+- Consensus/Disagreements:
+  - Consensus that trading rules/ATS/NMS considerations require review; disagreement on whether T+0 should be a universal goal or optionality for participants.
+
+Topic E — Interoperability (technical and regulatory)
+- Viewpoints:
+  - Industry repeatedly stressed interoperability across chains, market systems, and legal regimes; DTCC and others urged standards/consensus.
+  - Regulators and some industry participants emphasized regulatory interoperability (treating on‑chain/off‑chain equivalents consistently).
+- Consensus/Disagreements:
+  - Broad agreement that interoperability is essential and a major challenge. No consensus on how to achieve it; some favored industry‑led standards, others recommended regulatory guideposts.
+
+Topic F — Operational risks, smart contracts, and permissionless public chains
+- Viewpoints:
+  - Supporters say public blockchains improve transparency, resilience to insider risk, and provide open, widely standardized infrastructure.
+  - Critics raised multiple operational and governance risks (validator/operator behavior, secret emergency patches, MEV/externalization of payments, oracle risks, inability to “pause” transactions easily), and urged either avoiding permissionless public chains for system‑critical functions or imposing governance controls.
+- Consensus/Disagreements:
+  - Agreement that operational risks must be addressed; strong disagreement about whether permissionless chains can be used safely for securities record‑keeping and whether the SEC should treat chain operators/validators as part of regulated infrastructure.
+
+Topic G — Regulatory experimentation: sandboxes, conditional exemptive relief, pilots
+- Viewpoints:
+  - Many industry speakers strongly supported structured sandboxes/pilots/exemptive relief to enable onshore innovation and to test technical approaches (Commissioner Peirce championed a sandbox approach).
+  - Some urged sandboxes to be purpose‑driven and designed to test regulatory rule adjustments (not just tech capability) and to be global in scope.
+- Consensus/Disagreements:
+  - Broad support for pilot programs; differences on design (scope, size, conditions, whether to call them “sandbox” vs. targeted relief).
+
+4. MEETING CONCLUSION
+Overall outcome
+- No single rulemaking was adopted at the meeting, but the Commission signalled active next steps: staff were asked to consider guidance, exemptions and updates (issuance, custody, ATS modernization), and the community was invited to provide input via the Crypto Task Force webpage and to participate in pilots/sandboxes. Chair and Commissioners set policy priorities and urged coordinated staff work.
+
+Action items / next steps (explicitly stated or inferred from transcript)
+- SEC staff to continue providing clarifications and consider whether additional guidance, registration exemptions, or safe harbors are needed for crypto asset issuances (Chair Atkins: “I’ve asked the Commission staff to consider whether additional guidance, registration exemptions, and safe harbors are needed”). (Transcript)
+- Rescission of SAB 121 was announced/recognized as completed (discussion in meeting); further work to define qualified custodian eligibility under Advisers Act and Investment Company Act (Chair Atkins).
+  - Context: SAB 122 rescinded prior SAB 121 (SEC staff bulletin) — (RAG search result: Staff Accounting Bulletin No. 122 rescinds SAB 121) — link: https://www.sec.gov/rules-regulations/staff-guidance/staff-accounting-bulletins/staff-accounting-bulletin-122.
+- Staff to explore ATS modernization and whether guidance/rulemaking could facilitate listing and trading of crypto assets on national exchanges.
+- Staff and industry to work on transfer agent rule modernization (tokenization/transfer agent or “tokenization agent” role), and clarifications that a public ledger could serve as a definitive record of ownership where appropriate (panelist proposals).
+- SEC requested public input via Crypto Task Force portal and invited continued engagement; Commissioner Peirce specifically asked for feedback and announced additional roundtable (June 9) (Transcript).
+- Industry pilots / sandbox design: multiple panelists requested clear, outcome‑oriented pilot programs that inform rule changes rather than purely experimental sandboxes.
+
+Key takeaways
+- Tokenization offers tangible operational and business benefits (real‑time accounting, programmable corporate actions, collateral mobility, fractionalization and broader investor access) demonstrated by practitioners (Franklin Templeton, BlackRock, DTCC experiments).
+- Legal/regulatory uncertainty (custody rules, transfer agent treatment, ATS/NMS interactions, qualified custodian eligibility, and cross‑jurisdictional issues) remains the principal adoption bottleneck.
+- The SEC signaled willingness to employ a combination of staff guidance, conditional exemptive relief/pilot programs, and rulemaking to create pathways for tokenization while preserving investor protection and market integrity.
+- There are unresolved and material questions about the use of public permissionless blockchains for system‑critical functions; regulators and market infrastructure providers are asking for principled standards and interoperability work.
+
+5. KEY POINTS AND MAIN ARGUMENTS/EVENTS
+Important points and representative quotes (verbatim from transcript; citations to may_12_2025.txt).
+
+A. Framing and policy direction
+- “A key priority of my chairmanship will be to develop a rational regulatory framework for crypto asset markets that establishes clear rules of the road for issuance, custody and trading…” — Chairman Atkins (Transcript)
+- “Tokenization cannot reach its full potential without legal clarity.” — Commissioner Peirce (Transcript)
+
+B. Specific operational examples / live production evidence
+- Franklin Templeton: “We tokenized our money market fund in 2022 … We have deployed our system across 9 different block chains and we operate our wallet based transfer agent system across all of those block chains every single day. We've been doing so non‑stop since 2022 and we have not had a single issue with the way that our system is operating.” (Sandy Kaul / Franklin Templeton; Transcript)
+- BlackRock example (tokenized stable value yield fund): “That is, we have seen the enablement of full U.S. Treasury yield through the tokenized yield fund… the investor no longer makes that trade off between yield and liquidity…” (Robbie Mitchnick / BlackRock; Transcript)
+- DTCC collateral experiment referenced: DTCC representative Christian Sabella described collateral mobility experiments and “Project Ion” testing ledger technologies and scaling. (Transcript)
+
+C. Custody / accounting clarification
+- Chair: “Commission staff recently removed a significant impediment for companies seeking to provide crypto asset custodial services by rescinding staff Accounting bulletin #121.” (Transcript)
+- RAG confirmation: Staff Accounting Bulletin No. 122 rescinds SAB 121 (SEC staff bulletin) (rach_search result).
+
+D. Settlement, netting, and systemic concerns
+- Commissioner Crenshaw: “Netting also facilitates liquidity … On average, 98% of trade obligations are eliminated through netting… The settlement cycle facilitates… checks designed to identify and prevent fraud and cybercrime when red flags go up. The ability to pause a transaction and investigate is essential for investor protection…” (Transcript)
+- DTCC and other speakers emphasized choice and the need to preserve netting and liquidity features while designing tokenized options.
+
+E. Interoperability and taxonomy
+- Multiple speakers called for taxonomy and standards: “You should start with taxonomy… A clear and predictable taxonomy will help us to understand how best to adjust the rules and regulations” (Eun Ah Choi / Nasdaq; Transcript)
+- Interoperability layers: tokenized asset ↔ off‑chain book, chain‑to‑chain bridging, and regulatory interoperability (legal/perfection of security interest across state law and Article 8).
+
+F. Risks associated with public permissionless chains and smart contracts
+- Concerns raised: governance of validators, secret emergency patches, MEV and externalization of payments, oracle reliability, inability to pause transactions, composability creating contagion pathways between DeFi and TradFi.
+- Counterpoint from public chain proponents: public blockchains provide transparency and stronger audit surfaces and can be resilient; open cryptographic infrastructure (Internet analogies) may be the right path for some use cases.
+
+G. Regulatory sandbox / pilot proposals
+- Panelist consensus for pilots: Commissioner Peirce called for exemptive relief / sandbox; multiple firms urged practical pilot design with real market value and a route to informing rule changes (Transcript).
+
+H. Memorable / significant moments
+- Chair’s public acknowledgement of rescission of SAB 121 (transcript and RAG context).
+- Franklin Templeton’s claim of continuous production operation of a tokenized money market fund since 2022 (practical operational evidence).
+- BlackRock’s August/2024 tokenized fund example and references to stable coin integration as digital cash to unlock yield + liquidity tradeoffs.
+
+6. SOURCES
+Primary meeting materials
+- Meeting URL (SEC): https://www.sec.gov/newsroom/meetings-events/tokenization-moving-assets-onchain-where-tradfi-defi-meet (parse_url output)
+- Transcript: may_12_2025.txt (full transcript provided for analysis)
+
+SEC staff / regulatory context (RAG search)
+- Staff Accounting Bulletin No. 122 (rescind SAB 121): https://www.sec.gov/rules-regulations/staff-guidance/staff-accounting-bulletins/staff-accounting-bulletin-122 (RAG search result cited during meeting)
+
+Representative transcript citations (examples used above)
+- Chair Atkins keynote: may_12_2025.txt — opening keynote (Chairman Atkins remarks)
+- Commissioner Crenshaw speech: may_12_2025.txt — detailed remarks on settlement/netting
+- Commissioner Peirce remarks and call for comments / sandbox: may_12_2025.txt
+- Franklin Templeton production example (Sandy Kaul): may_12_2025.txt
+- BlackRock tokenized fund example (Robbie Mitchnick): may_12_2025.txt
+- DTCC Project Ion / collateral experiment (Christian Sabella): may_12_2025.txt
+
+Additional RAG/web resources used for context
+- RAG search results (SAB 122 / rescission of SAB 121) (see link above).
+- No additional external web_search results were needed for the primary analysis; where a speaker’s affiliation or title was required, the parse_url output was used (SEC meeting page lists many panelists and biographies).
+
+APPENDIX — Selected direct quotes (verbatim, from may_12_2025.txt)
+- Chairman Atkins: “A key priority of my chairmanship will be to develop a rational regulatory framework for crypto asset markets that establishes clear rules of the road for issuance, custody and trading…” (Transcript)
+- Commissioner Crenshaw: “The settlement cycle… is perhaps a design feature, not a bug. The intentional delay built in between trade execution and settlement provides for core market functionalities and protection mechanisms.” (Transcript)
+- Commissioner Peirce: “Tokenization cannot reach its full potential without legal clarity. Issuers and transfer agents continue to be unsure about whether a crypto network can be the master security holder file…” (Transcript)
+- Franklin Templeton: “We tokenized our money market fund in 2022 … we have not had a single issue with the way that our system is operating.” (Transcript)
+- BlackRock: “We have seen the enablement of full U.S. Treasury yield through the tokenized yield fund… the investor no longer makes that trade off between yield and liquidity.” (Transcript)
+
+CONCLUDING OBSERVATIONS AND RECOMMENDATIONS (analyst judgment based on transcript)
+1. The Commission is moving from enforcement‑led regulation to a proactive combination of guidance, pilots/exemptions, and targeted rulemaking. Market participants should expect a staged approach: immediate clarifications and staff guidance, followed by targeted pilot programs and then rulemaking where necessary.
+2. Priority regulatory workstreams that emerged and deserve prompt attention:
+   - Custody: clarify qualified custodian definitions and whether self‑custody can be an investor‑choice path with appropriate disclosure/safeguards.
+   - Transfer agent modernization: accommodate tokenization (explicitly enable tokenization agents) and define responsibilities for wallet recovery, freezes, sanctions/compliance, corporate actions and issuer recordkeeping.
+   - Market structure: assess ATS/NMS interactions with tokenized trading, define how best‑price obligations and trade‑through protections apply or are adapted for atomically settled trades.
+   - Interoperability & security interest perfection: work with state commercial law actors and industry on standards to perfect security interests in tokenized collateral cross‑jurisdictionally.
+   - Pilot/sandbox design: a clear, outcome‑oriented sandbox that tests both technical implementations and the practical operation of proposed rule changes is essential (industry asked that pilots be designed to produce evidence to inform rulemaking).
+3. Operational governance thresholds: For systemically significant uses (e.g., national market infrastructure, central depositories), the SEC should define minimum resiliency and governance standards for any ledger or validator set (whether permissioned or permissionless). These can be implemented via guidance, staff interpretive letters, or exchanges/clearing agencies subject to oversight.
+4. Continue public engagement: the Commission should ensure ample public comment windows, and require pilot participants to publish lessons learned (non‑confidential summaries) to accelerate consensus on taxonomy and interoperability standards.
+
+If you would like, I can:
+- Produce a speaker‑by‑speaker metrics appendix (estimated speaking time, word counts, number of turns, and a CSV of quotes used for each rating).
+- Draft candidate regulatory language for: (1) a transfer agent/tokenization agent rule, (2) conditional exemptive relief for pilot tokenized issuances, and (3) clarifying guidance for custody/qualified custodian treatment of tokenized securities (with citations to SEC rules and staff bulletins).
+- Create a prioritized action plan for the SEC staff based on the panel’s items (who within SEC might lead each workstream, suggested timelines, and sample survey/pilot designs).
+
+Which follow‑up would you prefer next?
