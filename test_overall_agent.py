@@ -30,7 +30,7 @@ if __name__ == "__main__":
     try:
         output_file = generate_overall_report(
             report_directory=".",
-            output_format="txt"
+            output_format="md"
         )
         
         print(f"\n✓ Overall report generated successfully!")

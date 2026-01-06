@@ -221,29 +221,37 @@ def create_overall_report_agent():
         messages = state["messages"]
         report_files = state.get("report_files", [])
         
-        planner_prompt = f"""You are a planning assistant for generating an overall SEC Round Table Meeting report.
+        planner_prompt = f"""You are a planning assistant for generating a professional regulatory intelligence report from SEC Round Table Meeting reports.
 
-                Your task is to create a detailed plan for analyzing multiple SEC meeting reports and generating a comprehensive overall report.
+                Your task is to create a detailed plan for analyzing multiple SEC meeting reports and generating a comprehensive regulatory intelligence report suitable for client briefings and compliance memos.
 
                 Number of meeting reports to analyze: {len(report_files)}
 
-                The overall report must include:
-                1. Combined views of the same speaker across all meetings
-                2. Topic tags for each speaker (topics they're interested in or spoke about)
-                3. Overall view of each person on different topics
-                4. Identification of the most strongly influenced person across all round table meetings
-                5. Future predictions:
-                - Decisions on hold or planned for future action
-                - Predictions on SEC-Crypto future
-                - Future steps/decisions based on strong influencers and their views
+                The report must follow this exact structure (in Markdown format):
+                1. Executive Intelligence Brief (1 page) - 5-7 key takeaways, top 3 regulatory trajectories, most influential stakeholders
+                2. Methodology Note - analysis approach, data sources, confidence scoring
+                3. Cross-Meeting Evidence Summary - Topic × Meeting frequency table, Speaker × Topic matrix, recurring themes (≥3 meetings) vs isolated mentions
+                4. Speaker Analysis - Clear separation of Authority vs Influence vs Policy Impact Likelihood, evidence-based indicators
+                5. Topic Tagging - Comprehensive taxonomy, Speaker × Topic matrix in table format
+                6. Most Influential Stakeholder - Evidence-based identification with explicit signals (repetition, alignment, directives)
+                7. "What This Means For..." - Implications for Issuers, DeFi Protocols, Exchanges/ATSs, Custodians/Compliance Teams
+                8. Unresolved Questions & Regulatory Gaps (NEW MANDATORY) - Doctrinal/Legal, Operational/Compliance, Market Structure, Inter-agency/Legislative gaps
+                9. Future Predictions - All labeled as [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE], with confidence levels, plus "What Could Change These Predictions"
+                10. Sources - All citations
+                
+                The entire report must be generated in clean, professional Markdown format suitable for GitHub/MkDocs rendering.
 
                 Create a step-by-step plan that:
                 - Identifies all meeting reports to read and analyze
-                - Determines how to aggregate speaker views across meetings
-                - Outlines how to identify topics and tag speakers
-                - Plans how to identify the most influential person
-                - Determines what additional context might be needed (RAG search, web search)
-                - Outlines how to generate future predictions based on influencer views
+                - Plans how to create tables and matrices (Topic × Meeting, Speaker × Topic)
+                - Determines how to separate Authority from Influence from Policy Impact Likelihood
+                - Outlines how to identify explicit signals (repetition across meetings, alignment with SEC actions, staff directives)
+                - Plans how to label predictions with appropriate confidence levels
+                - Determines what additional context might be needed (RAG search for SEC guidance, web search for trends)
+                - Outlines how to structure the Executive Intelligence Brief for executives
+                - Plans stakeholder-specific implications sections
+
+                Focus on evidence-based analysis, not narrative summaries. Plan for tables and structured data over long paragraphs.
 
                 Respond with a clear, actionable plan."""
         
@@ -258,7 +266,16 @@ def create_overall_report_agent():
         
         # Add system message with instructions if this is the first message
         if not any(isinstance(msg, SystemMessage) for msg in messages):
-            system_prompt = """You are an expert SEC Round Table Meeting analyst specializing in cross-meeting analysis and future prediction.
+            system_prompt = """You are a **Regulatory Intelligence Analyst** generating an **SEC Crypto Roundtable Regulatory Intelligence Report** for institutional clients. Your role is to produce professional, evidence-based intelligence reports suitable for client briefings, compliance memos, and internal policy analysis.
+
+                **CRITICAL OUTPUT REQUIREMENT:**
+                - Generate the ENTIRE report using clean, professional Markdown format
+                - Use hierarchical headings (#, ##, ###)
+                - Use bullet lists for insights and implications
+                - Use tables for Topic × Meeting frequency, Speaker × Topic engagement, Influence tiers
+                - Use blockquotes (>) for direct quotations
+                - Clearly distinguish sections as **FACTS**, **ANALYSIS**, or **INFERENCE**
+                - The Markdown must be suitable for GitHub/MkDocs rendering, internal research repositories, and client-facing document export
 
                 **Your Capabilities:**
                 - You can read multiple meeting report files
@@ -266,65 +283,142 @@ def create_overall_report_agent():
                 - You have a web search tool to find additional context about trends, future plans, or speaker backgrounds
                 - You can analyze and aggregate information across multiple meeting reports
 
-                **Overall Report Requirements:**
+                **Tone & Style:**
+                - Write as a regulatory intelligence analyst, NOT a meeting summarizer
+                - Maintain SEC-neutral, non-advocacy tone
+                - Use professional, executive-level language
+                - Make the report skimmable for busy executives
+                - Favor tables, bullet points, and structured data over long narrative blocks
 
-                1. **Speaker Aggregation Across Meetings:**
-                - Identify all speakers who appeared in multiple meetings
-                - Combine their views and opinions across all meetings they participated in
-                - Note any evolution or consistency in their positions
-                - Track their influence ratings across meetings
+                **Overall Report Structure (MUST FOLLOW THIS EXACT ORDER):**
 
-                2. **Topic Tagging for Speakers:**
-                - For each speaker, identify all topics they discussed or showed interest in
-                - Create a comprehensive list of topics (e.g., "DeFi regulation", "Custody", "Tokenization", "Smart contracts", "Intermediaries", etc.)
-                - Tag each speaker with their relevant topics
-                - Note the depth of their engagement with each topic
+                1. **EXECUTIVE INTELLIGENCE BRIEF (1 page maximum)**
+                   - 5-7 key takeaways (bullet points)
+                   - Top 3 regulatory trajectories with confidence levels (High/Medium/Low)
+                   - Most influential stakeholders with supporting evidence (1-2 sentences each)
+                   - This section should be immediately actionable for executives
 
-                3. **Overall View of Each Person on Different Topics:**
-                - For each speaker, provide their overall stance/view on each topic they engaged with
-                - Note any nuanced positions or changes over time
-                - Highlight areas where speakers have strong, consistent views
+                2. **METHODOLOGY NOTE**
+                   - Brief explanation of analysis approach
+                   - Number of meetings analyzed
+                   - Data sources used
+                   - Confidence scoring methodology
 
-                4. **Most Influential Person Identification:**
-                - Analyze influence ratings across all meetings
-                - Consider both formal authority (Commissioners, Chair) and substantive influence (panelists with strong arguments)
-                - Identify the person with the strongest overall influence across all round table meetings
-                - Justify the selection with evidence from multiple meetings
+                3. **CROSS-MEETING EVIDENCE SUMMARY**
+                   - Topic × Meeting frequency table (showing which topics appeared in which meetings)
+                   - Speaker × Topic engagement matrix (table format)
+                   - Identification of:
+                     * Ideas appearing in ≥3 meetings (recurring themes)
+                     * Single-meeting mentions (isolated ideas)
+                   - Use tables, not narrative paragraphs
 
-                5. **Future Predictions:**
-                - **Decisions on Hold or Planned:**
-                    * Identify any decisions mentioned as "under consideration", "on hold", or "planned for future"
-                    * Note any timelines or conditions mentioned
-                    * Identify which meetings discussed these future actions
-                
-                - **SEC-Crypto Future Predictions:**
-                    * Based on patterns across meetings, predict likely future directions
-                    * Consider the views of the most influential person(s)
-                    * Consider regulatory trends and policy directions indicated
-                    * Note any emerging themes or consensus points
-                
-                - **Future Steps/Decisions Based on Influencers:**
-                    * Analyze how the most influential person's views might shape future SEC actions
-                    * Predict specific regulatory actions or policy directions
-                    * Consider the intersection of influencer views and topic priorities
-                    * Note any potential conflicts or alignment with SEC mission
+                4. **SPEAKER ANALYSIS WITH CLEAR INFLUENCE SEPARATION**
+                   For each key speaker:
+                   - **Authority**: Formal role (Chair, Commissioner, Panelist, etc.)
+                   - **Influence**: Evidence-based indicators:
+                     * Repetition across meetings (how many times they spoke on topic)
+                     * Alignment with prior SEC actions or guidance
+                     * Explicit staff directives or follow-up requests
+                     * Agenda-setting power
+                   - **Likelihood of Policy Impact**: High/Medium/Low with justification
+                   - Meetings participated in
+                   - Combined views and opinions across meetings
+                   - Evolution or consistency in positions
+                   - Use structured format, not long narratives
 
-                **Important Guidelines:**
-                - Always cite sources (report files, RAG results, web search)
-                - Be objective and evidence-based
-                - Structure the report clearly with sections and subsections
-                - Use specific quotes and examples from meeting reports
-                - When making predictions, clearly distinguish between:
-                * Explicitly stated future plans
-                * Inferred likely actions based on patterns
-                * Speculative predictions based on influencer views
+                5. **TOPIC TAGGING FOR SPEAKERS**
+                   - Comprehensive list of topics (taxonomy early in report)
+                   - For each speaker (table format preferred):
+                     * Topics they engaged with
+                     * Depth of engagement (High/Medium/Low)
+                     * Overall stance on each topic (Support/Oppose/Neutral/Mixed)
+                     * Number of meetings where topic was discussed
+                   - Speaker × Topic matrix as a table
 
-                **Report Format:**
-                - Use clear headings and sections
-                - Include speaker names, affiliations, and meeting participation
-                - Provide topic tags as a clear list or table
-                - Structure predictions clearly with confidence levels where appropriate
-                - List all sources at the end"""
+                6. **MOST INFLUENTIAL STAKEHOLDER IDENTIFICATION**
+                   - Clear identification with evidence-based justification
+                   - Separate analysis of:
+                     * Formal authority (role-based)
+                     * Substantive influence (agenda-setting, repetition, adoption)
+                     * Policy impact likelihood
+                   - Evidence from multiple meetings
+                   - Explicit signals used (repetition, alignment, directives)
+
+                7. **"WHAT THIS MEANS FOR..." SECTION**
+                   Cover implications for each stakeholder group:
+                   - **Issuers**: What they need to know/prepare for
+                   - **DeFi Protocols**: Regulatory considerations
+                   - **Exchanges / ATSs**: Compliance implications
+                   - **Custodians / Compliance Teams**: Operational impacts
+                   - Use bullet points and clear action items
+
+                8. **UNRESOLVED QUESTIONS & REGULATORY GAPS** (NEW MANDATORY SECTION)
+                   This section must explicitly identify open regulatory questions that the SEC has not yet resolved.
+                   
+                   Structure by subcategories:
+                   - **Doctrinal / Legal Uncertainty**: Questions about legal definitions, jurisdiction, applicability of existing laws
+                   - **Operational / Compliance Ambiguity**: Questions about how to comply, what standards apply, implementation details
+                   - **Market Structure & Infrastructure Gaps**: Questions about market structure, infrastructure needs, technical requirements
+                   - **Inter-agency / Legislative Gaps**: Questions requiring coordination with other agencies or legislative action
+                   
+                   For EACH identified gap, include:
+                   - **Why it matters**: Business/regulatory impact
+                   - **Which meetings raised it**: Date and/or topic (cross-meeting evidence)
+                   - **Who raised it**: Commissioner, SEC staff, industry participant, academic
+                   - **Potential paths to resolution**: Guidance, pilot programs, rulemaking, legislation
+                   
+                   - Ground in cross-meeting evidence OR clearly label as inference where applicable
+                   - Avoid speculation unless explicitly labeled as such
+                   - Use Markdown formatting: tables, bullet lists, blockquotes for quotes
+
+                9. **FUTURE PREDICTIONS (WITH CLEAR LABELING)**
+                   A. **Decisions on Hold or Planned for Future Action**
+                      - List with explicit labeling:
+                        * [EXPLICITLY STATED] - Direct quotes from meetings
+                        * [STRONGLY INFERRED] - Based on patterns/evidence
+                        * [SPECULATIVE] - Based on influencer views
+                      - Timelines or conditions mentioned
+                      - Meetings where discussed
+                      - Confidence levels (High/Medium/Low)
+                   
+                   B. **SEC-Crypto Future Predictions**
+                      - Label each prediction: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+                      - Use probability ranges or conditional phrasing (avoid overly precise timelines)
+                      - Based on patterns across meetings
+                      - Consider views of most influential person(s)
+                      - Regulatory trends and policy directions
+                      - Emerging themes and consensus points
+                   
+                   C. **Future Steps/Decisions Based on Influencers**
+                      - Label each: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+                      - How most influential person's views might shape future actions
+                      - Specific regulatory actions or policy directions predicted
+                      - Alignment with SEC mission
+                   
+                   D. **What Could Change These Predictions**
+                      - Litigation outcomes
+                      - Elections
+                      - Inter-agency conflicts
+                      - Other external factors
+
+                10. **SOURCES**
+                    - List of all meeting report files analyzed
+                    - Additional sources from RAG or web search
+                    - Clear citations throughout the report
+
+                **Critical Guidelines:**
+                - ALWAYS cite sources (report files, RAG results, web search)
+                - Be objective and evidence-based - flag claims based on inference without supporting evidence
+                - Clearly distinguish between SEC staff authority and Commissioner authority
+                - Reduce narrative influence language - replace with structured, evidence-based indicators
+                - Use Markdown tables and matrices for cross-meeting analysis (proper Markdown table syntax)
+                - Make predictions skimmable with clear labels
+                - Ensure report is suitable for client briefings and compliance memos
+                - Maintain visual hierarchy with clear section headers (Markdown headings)
+                - Distinguish between Facts, Analysis, and Inference in section headers where appropriate
+                - Use Markdown blockquotes (>) for all direct quotations
+                - Format all tables using proper Markdown table syntax with pipes (|)
+                - Ensure the entire report is valid Markdown that can be rendered on GitHub/MkDocs"""
             
             messages = [SystemMessage(content=system_prompt)] + messages
         
@@ -379,7 +473,7 @@ def create_overall_report_agent():
 
 def generate_overall_report(
     report_directory: str = ".",
-    output_format: str = "txt"
+    output_format: str = "md"
 ) -> str:
     """
     Generate an overall SEC Round Table Meeting report from all available meeting reports.
@@ -437,62 +531,113 @@ def generate_overall_report(
             - Views of the most influential person(s)
             6. Generate a structured overall report with all required sections
 
-            Report Structure Required:
+            Report Structure Required (MUST FOLLOW THIS EXACT ORDER):
             ==========================================
-            SEC ROUND TABLE MEETINGS - OVERALL REPORT
+            SEC ROUND TABLE MEETINGS - REGULATORY INTELLIGENCE REPORT
             ==========================================
 
-            1. EXECUTIVE SUMMARY
-            - Overview of all meetings analyzed
-            - Key themes across meetings
-            - Summary of findings
+            1. EXECUTIVE INTELLIGENCE BRIEF (1 page maximum)
+               - 5-7 key takeaways (bullet points)
+               - Top 3 regulatory trajectories with confidence levels (High/Medium/Low)
+               - Most influential stakeholders with supporting evidence (1-2 sentences each)
 
-            2. SPEAKER AGGREGATION ACROSS MEETINGS
-            For each speaker who appeared in multiple meetings:
-            - Name and affiliation
-            - Meetings participated in
-            - Combined views and opinions across meetings
-            - Evolution or consistency in positions
-            - Overall influence rating across meetings
+            2. METHODOLOGY NOTE
+               - Brief explanation of analysis approach
+               - Number of meetings analyzed
+               - Data sources used
+               - Confidence scoring methodology
 
-            3. TOPIC TAGGING FOR SPEAKERS
-            - Comprehensive list of topics discussed
-            - For each speaker:
-                * Topics they engaged with
-                * Depth of engagement with each topic
-                * Overall stance on each topic
+            3. CROSS-MEETING EVIDENCE SUMMARY
+               - Topic × Meeting frequency table (table format)
+               - Speaker × Topic engagement matrix (table format)
+               - Ideas appearing in ≥3 meetings (recurring themes)
+               - Single-meeting mentions (isolated ideas)
 
-            4. MOST INFLUENTIAL PERSON ACROSS ALL MEETINGS
-            - Identification of the most influential person
-            - Justification with evidence from multiple meetings
-            - Analysis of their influence across different topics
+            4. SPEAKER ANALYSIS WITH CLEAR INFLUENCE SEPARATION
+               For each key speaker:
+               - Authority: Formal role
+               - Influence: Evidence-based indicators (repetition, alignment, directives)
+               - Likelihood of Policy Impact: High/Medium/Low with justification
+               - Meetings participated in
+               - Combined views across meetings
+               - Evolution or consistency in positions
 
-            5. FUTURE PREDICTIONS
-            A. Decisions on Hold or Planned for Future Action
-                - List of decisions mentioned as under consideration
-                - Timelines or conditions mentioned
-                - Meetings where these were discussed
-            
-            B. SEC-Crypto Future Predictions
-                - Likely future directions based on patterns
-                - Emerging themes and consensus points
-                - Regulatory trends indicated
-            
-            C. Future Steps/Decisions Based on Influencers
-                - How most influential person's views might shape future actions
-                - Specific regulatory actions or policy directions predicted
-                - Alignment with SEC mission
+            5. TOPIC TAGGING FOR SPEAKERS
+               - Comprehensive topic taxonomy (list early)
+               - Speaker × Topic matrix (table format)
+               - For each speaker: Topics, Depth of engagement, Overall stance
 
-            6. SOURCES
-            - List of all meeting report files analyzed
-            - Additional sources from RAG or web search
+            6. MOST INFLUENTIAL STAKEHOLDER IDENTIFICATION
+               - Clear identification with evidence-based justification
+               - Separate: Formal authority vs. Substantive influence vs. Policy impact likelihood
+               - Explicit signals used (repetition, alignment, directives)
 
-            Remember:
-            - Be thorough and analyze ALL meeting reports
-            - Use specific quotes and examples from reports
-            - Clearly distinguish between stated plans and predictions
-            - Cite all sources properly
-            - Structure the report clearly with proper headings"""
+            7. "WHAT THIS MEANS FOR..." SECTION
+               Cover implications for:
+               - Issuers
+               - DeFi Protocols
+               - Exchanges / ATSs
+               - Custodians / Compliance Teams
+               Use bullet points and clear action items
+
+            8. UNRESOLVED QUESTIONS & REGULATORY GAPS (NEW MANDATORY SECTION)
+               Structure by subcategories:
+               - Doctrinal / Legal Uncertainty
+               - Operational / Compliance Ambiguity
+               - Market Structure & Infrastructure Gaps
+               - Inter-agency / Legislative Gaps
+               
+               For EACH gap, include:
+               - Why it matters
+               - Which meetings raised it (date/topic)
+               - Who raised it (Commissioner, staff, industry, academic)
+               - Potential paths to resolution (guidance, pilot, rulemaking, legislation)
+               - Ground in cross-meeting evidence OR label as inference
+               - Use Markdown formatting (tables, bullets, blockquotes)
+
+            9. FUTURE PREDICTIONS (WITH CLEAR LABELING)
+               A. Decisions on Hold or Planned
+                  - Label each: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+                  - Confidence levels (High/Medium/Low)
+                  - Timelines or conditions
+                  - Meetings where discussed
+               
+               B. SEC-Crypto Future Predictions
+                  - Label each: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+                  - Use probability ranges (avoid overly precise timelines)
+                  - Based on patterns, influencer views, regulatory trends
+               
+               C. Future Steps/Decisions Based on Influencers
+                  - Label each: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+                  - How influencer views might shape actions
+               
+               D. What Could Change These Predictions
+                  - Litigation outcomes
+                  - Elections
+                  - Inter-agency conflicts
+                  - Other external factors
+
+            10. SOURCES
+               - List of all meeting report files analyzed
+               - Additional sources from RAG or web search
+
+            Critical Requirements:
+            - Write as a regulatory intelligence analyst, NOT a meeting summarizer
+            - Maintain SEC-neutral, non-advocacy tone
+            - Generate ENTIRE report in clean, professional Markdown format
+            - Use Markdown tables (proper syntax with pipes |) for cross-meeting analysis
+            - Use Markdown blockquotes (>) for all direct quotations
+            - Use hierarchical Markdown headings (#, ##, ###)
+            - Make report skimmable for executives
+            - Clearly label all predictions: [EXPLICITLY STATED] / [STRONGLY INFERRED] / [SPECULATIVE]
+            - Separate Authority vs. Influence vs. Policy Impact Likelihood
+            - Use evidence-based indicators, not narrative influence language
+            - Flag claims based on inference without supporting evidence
+            - Distinguish between SEC staff authority and Commissioner authority
+            - Ensure report is suitable for GitHub/MkDocs rendering, research repositories, client export
+            - Use clear visual hierarchy with Markdown section headers
+            - Distinguish Facts, Analysis, and Inference where appropriate
+            - Include the new mandatory section: Unresolved Questions & Regulatory Gaps"""
     
     initial_state = {
         "messages": [HumanMessage(content=initial_message)],
@@ -554,24 +699,38 @@ def generate_overall_report(
         
         report_content += sources_section
     
+    # Ensure content starts with proper Markdown title if not already present
+    if not report_content.strip().startswith('#'):
+        # Add title if missing
+        title = "# SEC Crypto Roundtables Regulatory Intelligence Report\n\n"
+        report_content = title + report_content
+    
     # Save report
     output_file = save_overall_report(report_content, output_format)
     
     return output_file
 
 
-def save_overall_report(content: str, output_format: str = "txt") -> str:
+def save_overall_report(content: str, output_format: str = "md") -> str:
     """
     Save the overall report to a file in the specified format.
     
     Args:
-        content: Report content
-        output_format: Output format - "txt", "docx", or "pdf"
+        content: Report content (should be in Markdown format)
+        output_format: Output format - "md" (default), "txt", "docx", or "pdf"
     
     Returns:
         Path to the saved file
     """
-    if output_format.lower() == "txt":
+    if output_format.lower() == "md" or output_format.lower() == "markdown":
+        # Use the exact filename specified
+        filename = "SEC_Overall_Report_All_Meetings.md"
+        filepath = os.path.join(os.getcwd(), filename)
+        with open(filepath, 'w', encoding='utf-8') as f:
+            f.write(content)
+        return filepath
+    
+    elif output_format.lower() == "txt":
         filename = "SEC_Overall_Report_All_Meetings.txt"
         filepath = os.path.join(os.getcwd(), filename)
         with open(filepath, 'w', encoding='utf-8') as f:
@@ -641,7 +800,7 @@ if __name__ == "__main__":
     try:
         output_file = generate_overall_report(
             report_directory=".",
-            output_format="txt"
+            output_format="md"
         )
         
         print(f"\n✓ Overall report generated successfully!")

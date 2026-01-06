@@ -2,3 +2,4 @@
 .env
 .streamlit/secrets.toml
 local_testing.ipynb
+__pycache__/
