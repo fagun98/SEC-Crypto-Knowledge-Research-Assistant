@@ -1,4 +1,5 @@
 .venv
+venv
 .env
 .streamlit/secrets.toml
 local_testing.ipynb
