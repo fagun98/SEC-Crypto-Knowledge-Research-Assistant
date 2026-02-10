@@ -1,0 +1,116 @@
+custody
+custodial
+custodian
+qualified custodian
+qualified custody
+safeguarding
+safekeeping
+safekeeping of assets
+segregation
+segregated
+segregation of customer assets
+segregation of customer funds
+commingling
+misappropriation
+misuse of customer assets
+possession or control
+control location
+control agreement
+customer protection
+customer property
+customer funds
+settlement
+clearing
+carrying broker
+prime broker
+Rule 15c3-3
+15c3-3
+customer protection rule
+physical possession
+control
+reserve account
+Special Reserve Bank Account
+SIPA
+SIPC
+net capital
+broker-dealer
+BD
+carrying firm
+introducing firm
+crypto asset securities
+digital asset securities
+Rule 206(4)-2
+206(4)-2
+custody rule
+surprise examination
+independent public accountant
+account statements
+adviser custody
+investment adviser custody
+pooled investment vehicle custody
+audit exception
+trust company
+limited purpose trust
+fiduciary
+fiduciary capacity
+bank custody
+national bank custody
+state-chartered bank custody
+safekeeping accounts
+omnibus custody
+OCC interpretive letter
+supervisory letter
+SR letter
+private key
+key management
+key custody
+key storage
+wallet
+cold storage
+hot wallet
+MPC
+multisig
+HSM
+signing
+transaction authorization
+key rotation
+access controls
+incident response
+breach
+loss of keys
+recovery
+backup
+restore
+SAB 121
+SAB 122
+Staff Accounting Bulletin
+safeguarding obligation
+safeguarding liabilities
+safeguarding assets
+custody accounting treatment
+balance sheet recognition
+misstatement about custody
+misleading disclosures
+held in custody
+failure to segregate
+commingled customer assets
+internal controls failure
+books and records failures
+misuse of customer funds
+diverted customer assets
+FCM
+DCO
+segregation requirements
+customer segregated funds
+secured amount
+collateral custody
+digital asset collateral
+virtual currency collateral
+Part 1 segregation
+Part 22 segregation
+BitLicense
+NYDFS
+virtual currency business activity
+SPDI
+Wyoming
+digital asset custody

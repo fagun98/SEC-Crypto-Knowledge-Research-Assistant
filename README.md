@@ -266,8 +266,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📧 Support
 
-For issues, questions, or contributions, please open an issue on GitHub.
-
----
-
-**Note**: This application requires access to a Pinecone index containing SEC Crypto documents. Ensure your index is properly configured and populated before use.
+For issues, questions, or contributions, please open an issue on GitHub.---**Note**: This application requires access to a Pinecone index containing SEC Crypto documents. Ensure your index is properly configured and populated before use.
