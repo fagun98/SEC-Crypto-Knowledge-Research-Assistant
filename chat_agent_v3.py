@@ -499,11 +499,11 @@ You are an **SEC Q&A Chat Agent**.
 
 Rules:
 - Answer questions ONLY using the summarised SEC.gov snippets provided to you.
-- If the summaries do not contain enough information to answer confidently, say so and,
-  if appropriate, suggest what the user might look for on sec.gov.
 - Write in clear, non‑legalistic English.
 - Provide concise factual answers strictly based on the summaries. Do NOT offer
   personal interpretations or forecasts unless clearly supported by the summaries.
+- Focus on giving a direct, best‑effort answer based on the summaries you have.
+- Do NOT mention limitations of the summaries, the underlying SEC.gov materials, or what is or is not covered; simply give the best answer you can.
 - At the end of every answer, include a Markdown section titled "Sources" with bullet points:
 
   Sources:
@@ -526,8 +526,8 @@ Instructions:
 - Carefully read the summaries and answer the user query as accurately as possible.
 - Use only information that is reasonably supported by these summaries.
 - When you make factual statements, ensure they can be traced back to at least one summary.
-- If the summaries do not answer the question, say so and, if appropriate, suggest what the user
-  could search for on sec.gov.
+- Give a direct, finished answer; do not mention limitations of the summaries or what is or is not covered by SEC.gov.
+- Do NOT say phrases like "not from the SEC.gov materials you provided" or "the provided chunks do not contain...".
 - At the end of your answer, add a "Sources" section with bullet points listing the most relevant
   sec.gov URLs you used.
 """
@@ -909,14 +909,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--test",
         type=int,
-        choices=[-1, 1, 2, 3],
+        choices=[-1, 1, 2, 3, 4],
         default=1,
         help=(
             "Select test mode: "
             "-1 = topics only (verify topic generation), "
             "1 = single hard-coded query (chunk pipeline), "
-            "2 = batch from sample_questions.txt (chunk pipeline), "
-            "3 = compare chunk vs doc pipelines on a single query."
+            "2 = batch from sample_questions.txt (doc pipeline), "
+            "3 = compare chunk vs doc pipelines on a single query, "
+            "4 = doc-pipeline regression on harder questions."
         ),
     )
     parser.add_argument(
@@ -1014,4 +1015,26 @@ if __name__ == "__main__":
         print("[v3] Doc summaries:", len(exp_docs.get("doc_summaries", [])))
         print("\n[v3] Doc final answer:\n")
         print(exp_docs.get("final_answer", ""))
+
+    elif args.test == 4:
+        # Regression-style test: run doc pipeline on questions that previously
+        # elicited meta disclaimers (e.g., "Not from the SEC.gov materials you provided").
+        problem_queries = [
+            "Can the system map which crypto-asset categories (stablecoins, DeFi tokens, NFTs) are most frequently cited in SEC enforcement actions or policy statements?",
+            "How does the SEC’s current regulatory framework compare with the EU’s MiCA regime in terms of market authorization, investor protection, and stablecoin oversight?",
+            "Can the system generate a comparative matrix of SEC regulations versus the UK’s phased crypto regime and highlight convergence or divergence areas?",
+            "What regulatory approaches in MiCA or FATF guidance could be recommended to close gaps in the SEC’s current approach to DeFi oversight?",
+            "Using historical SEC task force data, what precedents exist for shifting from enforcement-first to policy-led approaches?",
+            "How might rulemaking scenarios (e.g., classifying stablecoins as securities vs. payment instruments) impact institutional adoption, based on global precedent analysis?",
+            "What are the recurring themes and concerns in Task Force Written Inputs and Roundtable Transcripts, particularly from industry vs. academic participants?",
+        ]
+
+        for idx, q in enumerate(problem_queries, start=1):
+            print(f"\n[v3] Test 4, question {idx}: {q}")
+            exp = run_sec_query_experiment_v3_docs(
+                q, top_k_matches=30, top_docs=10
+            )
+            answer = exp.get("final_answer", "")
+            print("\nAnswer:\n")
+            print(answer or "_No answer generated._")
 
