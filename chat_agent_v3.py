@@ -30,7 +30,13 @@ from typing import Dict, List, Tuple
 from dotenv import load_dotenv
 from openai import OpenAI
 
-from crypto_ingest import hybrid_search
+from crypto_ingest import (
+    hybrid_search,
+    fetch_url,
+    extract_text_from_html,
+    extract_text_from_pdf,
+    is_pdf_url,
+)
 
 load_dotenv()
 
@@ -196,6 +202,25 @@ def _retrieve_sec_chunks_for_topics(
 
     print(f"[v3] Retrieved {len(aggregated)} unique chunk(s) across topics.")
     return aggregated[:max_total]
+
+
+def _build_retrieval_queries(query: str, topics: List[str]) -> List[str]:
+    """
+    Build augmented retrieval queries by appending the full user query to each topic.
+
+    This helps the vector search stay anchored to the specific question while still
+    benefiting from topic-focused phrasing.
+    """
+    retrieval_queries: List[str] = []
+    base = query.strip()
+    for topic in topics:
+        t = topic.strip()
+        if not t:
+            continue
+        retrieval_queries.append(f"{t}. User query: {base}")
+    if not retrieval_queries and base:
+        retrieval_queries.append(base)
+    return retrieval_queries
 
 
 def _truncate_chunks(
@@ -414,7 +439,7 @@ Instructions:
                 model="gpt-5-mini",
                 input=full_prompt,
                 text={"format": {"type": "text"}},
-                max_output_tokens=4000,
+                max_output_tokens=800,
             )
             raw_text = resp.output_text or ""
             text = raw_text.strip()
@@ -532,6 +557,217 @@ Instructions:
     )
 
 
+def _group_chunks_by_url(chunks: List[RetrievedChunk]) -> Dict[str, List[str]]:
+    """
+    Group truncated chunk contents by source_url for document-level reasoning.
+    """
+    grouped: Dict[str, List[str]] = {}
+    for c in chunks:
+        url = c.source_url or "N/A"
+        grouped.setdefault(url, []).append(c.content)
+    return grouped
+
+
+def _rerank_documents_for_query(
+    query: str,
+    doc_candidates: Dict[str, List[str]],
+    *,
+    max_candidates: int = 15,
+    top_n: int = 10,
+) -> List[str]:
+    """
+    Ask an LLM to pick the top-N source URLs most likely to answer the query.
+    """
+    if not doc_candidates:
+        return []
+
+    # Build a compact view of candidates: snippet + chunk count.
+    items: List[Dict[str, object]] = []
+    for url, chunks in list(doc_candidates.items())[:max_candidates]:
+        text = " ".join(chunks)[:800]
+        items.append(
+            {
+                "source_url": url,
+                "snippet": text,
+                "chunk_count": len(chunks),
+            }
+        )
+    items_json = json.dumps(items)
+
+    system_prompt = """
+You are an assistant that ranks SEC.gov documents for a specific research question.
+
+Rules:
+- Each candidate has a source_url, a short text snippet, and a chunk_count.
+- Select the documents that are most likely to contain enough information to answer the question.
+- Prefer documents whose snippet clearly discusses the key concepts in the query.
+- Work strictly within the SEC context.
+
+Output format:
+- Return ONLY valid JSON:
+  {
+    "top_urls": ["https://www.sec.gov/...", "..."]
+  }
+"""
+
+    user_prompt = f"""
+User query:
+{query}
+
+Candidate documents (JSON list):
+{items_json}
+
+Instructions:
+- Choose up to {top_n} source_url values that look most promising for answering the query.
+- Order them from most to least promising.
+- Respond with JSON only.
+"""
+
+    full_prompt = system_prompt + "\n\n" + user_prompt
+    try:
+        resp = client.responses.create(
+            model="gpt-5-mini",
+            input=full_prompt,
+            text={"format": {"type": "text"}},
+            max_output_tokens=1200,
+        )
+        raw_text = resp.output_text or ""
+        text = raw_text.strip()
+        _estimate_tokens_and_cost(
+            resp, "gpt-5-mini", full_prompt, text, step_name="v3_rerank_docs"
+        )
+        if not text:
+            raise ValueError("Empty response from model for doc rerank.")
+        start = text.find("{")
+        end = text.rfind("}")
+        json_str = (
+            text[start : end + 1]
+            if start != -1 and end != -1 and end >= start
+            else text
+        )
+        data = json.loads(json_str)
+        urls = data.get("top_urls") or []
+        top_urls: List[str] = []
+        for u in urls:
+            if isinstance(u, str) and u.strip():
+                top_urls.append(u.strip())
+        if not top_urls:
+            raise ValueError("No valid URLs in reranker JSON.")
+        # Filter to URLs we actually have candidates for and enforce top_n.
+        filtered = [u for u in top_urls if u in doc_candidates]
+        return filtered[:top_n] or list(doc_candidates.keys())[:top_n]
+    except Exception as e:
+        print(f"[v3] Document reranking failed, falling back to heuristic: {e}")
+        # Heuristic: sort URLs by number of chunks (descending).
+        sorted_urls = sorted(
+            doc_candidates.items(), key=lambda kv: len(kv[1]), reverse=True
+        )
+        return [u for u, _ in sorted_urls[:top_n]]
+
+
+def _fetch_full_document_text(url: str, *, max_chars: int = 60000) -> str:
+    """
+    Refetch a full SEC document by URL and extract main text.
+    """
+    resp = fetch_url(url)
+    if not resp:
+        return ""
+    content_type = (resp.headers.get("Content-Type") or "").lower()
+    text = ""
+    try:
+        if "pdf" in content_type or is_pdf_url(url):
+            pages = extract_text_from_pdf(url, resp.content)
+            text = " ".join(page_text for _, page_text in pages)
+        else:
+            _, main_text = extract_text_from_html(url, resp.text)
+            text = main_text
+    except Exception as e:
+        print(f"[v3] Error extracting full document for {url}: {e}")
+        return ""
+    text = " ".join(text.split())
+    if len(text) > max_chars:
+        text = text[:max_chars]
+    return text
+
+
+def _summarize_full_documents(
+    query: str,
+    urls: List[str],
+    *,
+    max_docs: int = 7,
+) -> List[Dict]:
+    """
+    Summarise full SEC documents (by URL) with respect to the question.
+    """
+    if not urls:
+        return []
+
+    summaries: List[Dict] = []
+    for idx, url in enumerate(urls[:max_docs]):
+        doc_text = _fetch_full_document_text(url)
+        if not doc_text or len(doc_text) < 500:
+            continue
+
+        system_prompt = """
+You are an assistant that summarises full SEC.gov documents specifically to help answer a question.
+
+Rules:
+- Use ONLY the provided document text; do not add outside knowledge.
+- Focus your summary strictly on parts of the document that help answer the question.
+- If the document is mostly irrelevant to the question, say that explicitly.
+- Keep the summary focused and structured, but cover all key points relevant to the query.
+"""
+
+        user_prompt = f"""
+User query:
+{query}
+
+Source URL: {url}
+
+Full document text:
+\"\"\"{doc_text}\"\"\"
+
+Instructions:
+- Summarise only the information that is helpful for answering the user query.
+- If little or nothing in this document is relevant, say that clearly.
+"""
+
+        full_prompt = system_prompt + "\n\n" + user_prompt
+        try:
+            resp = client.responses.create(
+                model="gpt-5-mini",
+                input=full_prompt,
+                text={"format": {"type": "text"}},
+                max_output_tokens=1200,
+            )
+            raw_text = resp.output_text or ""
+            text = raw_text.strip()
+            _estimate_tokens_and_cost(
+                resp,
+                "gpt-5-mini",
+                full_prompt,
+                text,
+                step_name=f"v3_doc_summarize_{idx}",
+            )
+            summary = text
+            if not summary:
+                continue
+        except Exception as e:
+            print(f"[v3] Full-document summarisation failed for {url}: {e}")
+            continue
+
+        summaries.append(
+            {
+                "source_url": url,
+                "summary": summary,
+                "doc_length": len(doc_text),
+            }
+        )
+
+    print(f"[v3] Generated {len(summaries)} full-document summaries.")
+    return summaries
+
+
 def run_sec_query_experiment_v3(
     query: str,
     *,
@@ -579,6 +815,62 @@ def run_sec_query_experiment_v3(
     }
 
 
+def run_sec_query_experiment_v3_docs(
+    query: str,
+    *,
+    top_k_matches: int = 30,
+    top_docs: int = 10,
+) -> Dict:
+    """
+    Document-level variant of the v3 pipeline with reranking and full-document summaries.
+    """
+    print(f"[v3-docs] Running SEC query experiment (docs) for: {query!r}")
+
+    topics = _generate_sec_topics(query)
+    retrieval_queries = _build_retrieval_queries(query, topics)
+
+    # Reuse the same retrieval helper but pass augmented queries.
+    raw_chunks = _retrieve_sec_chunks_for_topics(
+        retrieval_queries, top_k_per_topic=10, alpha=0.5, max_total=top_k_matches
+    )
+
+    if not raw_chunks:
+        final_answer = (
+            "I couldn't find any relevant content in the SEC knowledge base for this question. "
+            "Please try rephrasing or narrowing your question or consult the SEC website directly."
+            "\n\nSources: (no sec.gov documents matched)"
+        )
+        return {
+            "query": query,
+            "topics": topics,
+            "retrieval_queries": retrieval_queries,
+            "raw_chunks": [],
+            "reranked_urls": [],
+            "doc_summaries": [],
+            "final_answer": final_answer,
+        }
+
+    truncated_chunks = _truncate_chunks(raw_chunks)
+    grouped = _group_chunks_by_url(truncated_chunks)
+    reranked_urls = _rerank_documents_for_query(
+        query, grouped, max_candidates=15, top_n=top_docs
+    )
+    doc_summaries = _summarize_full_documents(query, reranked_urls)
+    final_answer = _generate_final_answer_from_summaries(query, doc_summaries)
+
+    return {
+        "query": query,
+        "topics": topics,
+        "retrieval_queries": retrieval_queries,
+        "raw_chunks": [
+            {"source_url": c.source_url, "content": c.content} for c in raw_chunks
+        ],
+        "reranked_urls": reranked_urls,
+        "doc_summaries": doc_summaries,
+        "final_answer": final_answer,
+    }
+
+
 def answer_sec_query_v3(query: str) -> str:
     """
     Thin wrapper that returns only the final answer string for a query.
@@ -593,6 +885,20 @@ def answer_sec_query_v3(query: str) -> str:
     )
 
 
+def answer_sec_query_v3_docs(query: str) -> str:
+    """
+    Wrapper that uses the document-level v3 pipeline.
+    """
+    result = run_sec_query_experiment_v3_docs(query)
+    answer = (result.get("final_answer") or "").strip()
+    if answer:
+        return answer
+    return (
+        "I wasn't able to generate an answer from the available SEC documents.\n\n"
+        "Sources: see the SEC URLs included in the retrieved context."
+    )
+
+
 if __name__ == "__main__":
     import argparse
     from pathlib import Path
@@ -603,9 +909,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "--test",
         type=int,
-        choices=[-1, 1, 2],
+        choices=[-1, 1, 2, 3],
         default=1,
-        help="Select test mode: -1 = topics only (verify topic generation), 1 = single hard-coded query, 2 = batch from sample_questions.txt.",
+        help=(
+            "Select test mode: "
+            "-1 = topics only (verify topic generation), "
+            "1 = single hard-coded query (chunk pipeline), "
+            "2 = batch from sample_questions.txt (chunk pipeline), "
+            "3 = compare chunk vs doc pipelines on a single query."
+        ),
     )
     parser.add_argument(
         "--file",
@@ -652,7 +964,8 @@ if __name__ == "__main__":
         results = []
         for idx, q in enumerate(questions[:10], start=1):
             print(f"\n[v3] Running question {idx}: {q}")
-            exp = run_sec_query_experiment_v3(q, top_k_matches=25)
+            # exp = run_sec_query_experiment_v3(q, top_k_matches=25)
+            exp = run_sec_query_experiment_v3_docs(q, top_k_matches=30, top_docs=10)
             answer = exp.get("final_answer", "")
             results.append((q, answer))
 
@@ -673,4 +986,32 @@ if __name__ == "__main__":
                 print(q)
                 print("\nAnswer:\n")
                 print(ans or "_No answer generated._")
+
+    elif args.test == 3:
+        example_query = (
+            "How has the SEC’s interpretation of the Howey Test evolved across enforcement "
+            "cases related to crypto tokens, and what classification patterns can the "
+            "knowledge base identify?"
+        )
+        print(f"[v3] Test 3: compare chunk vs doc pipelines\nQuery: {example_query}\n")
+
+        print("\n[v3] === Chunk-level pipeline ===")
+        exp_chunk = run_sec_query_experiment_v3(example_query, top_k_matches=25)
+        print("\n[v3] Chunk topics:", exp_chunk.get("topics"))
+        print("[v3] Chunk retrieved chunks:", len(exp_chunk.get("raw_chunks", [])))
+        print("[v3] Chunk summaries:", len(exp_chunk.get("summaries", [])))
+        print("\n[v3] Chunk final answer:\n")
+        print(exp_chunk.get("final_answer", ""))
+
+        print("\n[v3] === Document-level pipeline ===")
+        exp_docs = run_sec_query_experiment_v3_docs(
+            example_query, top_k_matches=30, top_docs=10
+        )
+        print("\n[v3] Doc topics:", exp_docs.get("topics"))
+        print("[v3] Doc retrieval queries:", len(exp_docs.get("retrieval_queries", [])))
+        print("[v3] Doc raw chunks:", len(exp_docs.get("raw_chunks", [])))
+        print("[v3] Doc reranked URLs:", len(exp_docs.get("reranked_urls", [])))
+        print("[v3] Doc summaries:", len(exp_docs.get("doc_summaries", [])))
+        print("\n[v3] Doc final answer:\n")
+        print(exp_docs.get("final_answer", ""))
 
