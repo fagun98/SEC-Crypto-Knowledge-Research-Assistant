@@ -20,7 +20,7 @@ load_dotenv()
 INDEX_NAME = "sec-cryto-knowledge-base-rag"
 OPENAI_EMBED_MODEL = "text-embedding-3-small"
 PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", INDEX_NAME)
-PINECONE_NAMESPACE = os.getenv("PINECONE_NAMESPACE", "sec-knowledge-base-rag")
+PINECONE_NAMESPACE = os.getenv("PINECONE_NAMESPACE", "sec-knowledge-base")
 EMBEDDED_URLS_PATH = os.getenv("EMBEDDED_URLS_PATH", "embedded_urls.json")
 
 client = OpenAI()
@@ -455,7 +455,21 @@ def run_ingestion(seed_urls: List[str], max_pages: int = 300, max_depth: int = 2
 
 if __name__ == "__main__":
     seeds = [
-        "https://www.sec.gov/enforcement-litigation/litigation-releases",
+        "https://www.sec.gov/about/divisions-offices/division-corporation-finance/framework-investment-contract-analysis-digital-assets",
+        "https://www.sec.gov/files/dlt-framework.pdf",
+        "https://www.sec.gov/newsroom/speeches-statements/speech-hinman-061418",
+        "https://www.sec.gov/newsroom/speeches-statements/peirce-how-we-howey-050919",
+        "https://www.sec.gov/newsroom/press-releases/2018-88",
+        "https://www.sec.gov/newsroom/speeches-statements/statement-certain-proof-work-mining-activities-032025",
+        "https://www.sec.gov/newsroom/speeches-statements/statement-stablecoins-040425",
+        "https://www.sec.gov/newsroom/speeches-statements/statement-certain-protocol-staking-activities-052925",
+        "https://www.sec.gov/newsroom/speeches-statements/crenshaw-statement-protocol-staking-052925",
+        "https://www.sec.gov/newsroom/speeches-statements/peirce-statement-rfi-022125",
+        "https://www.sec.gov/newsroom/speeches-statements/peirce-remarks-sec-speaks-051925-new-paradigm-remarks-sec-speaks",
+        "https://www.sec.gov/newsroom/speeches-statements/atkins-111225-secs-approach-digital-assets-inside-project-crypto",
+        "https://www.sec.gov/about/crypto-task-force/written-submission/ctf-input-reiners-2025-3-18",
+        "https://www.sec.gov/about/crypto-task-force/written-submission/ctf-input-daugherty-2025-3-20"
+        # "https://www.sec.gov/enforcement-litigation/litigation-releases",
         # "https://www.sec.gov/rules-regulations/rulemaking-activity",
         # "https://www.sec.gov/rules-regulations/staff-guidance/trading-markets-frequently-asked-questions",
         # "https://www.sec.gov/about/divisions-offices/division-investment-management",
