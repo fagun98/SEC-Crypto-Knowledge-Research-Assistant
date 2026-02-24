@@ -1,61 +1,59 @@
 """
-SEC Q&A Chat Agent.
+    SEC Q&A Chat Agent.
 
-This module implements a question‑answering agent tailored for
-United States Securities and Exchange Commission (SEC) topics.  It
-fetches the latest material from SEC web properties at runtime and
-produces a concise answer with citations back to sec.gov.  The goal
-of this module is to provide accurate, current answers using only
-official SEC sources while remaining transparent about where
-information originates.
+    This module implements a question‑answering agent tailored for
+    United States Securities and Exchange Commission (SEC) topics.  It
+    retrieves relevant material from a pre-populated Pinecone SEC knowledge base and
+    produces a concise answer with citations back to sec.gov.  The goal
+    of this module is to provide accurate, current answers using only
+    official SEC sources while remaining transparent about where
+    information originates.
 
-Changes from original implementation
------------------------------------
-The original proof‑of‑concept agent performed a shallow crawl of
-several SEC index pages and used a simple keyword overlap to select
-documents.  This version adds the following improvements:
+    Changes from original implementation
+    -----------------------------------
+    The original proof‑of‑concept agent performed a shallow crawl of
+    several SEC index pages and used a simple keyword overlap to select
+    documents.  This version adds the following improvements:
 
-* More granular seed selection based on the query.  In addition to
-  weighting speeches, press releases, enforcement and crypto, the
-  agent now explicitly targets rulemaking pages when regulatory
-  amendments are mentioned and enforcement pages when the question
-  mentions enforcement, charges or settlements.
-* Weighted keyword scoring that accounts for both the total number
-  of matching tokens and their proportion relative to the query.
-  This helps promote pages that discuss most of the query terms
-  rather than those that simply mention one.
-* More robust truncation of crawled content and duplicate filtering.
-  Each document’s content is trimmed to a fixed number of characters
-  to reduce token usage, and identical URLs are deduplicated early.
-* Defensive programming around crawler failures: if no pages are
-  fetched, the agent returns a polite message rather than raising
-  an exception.
-* Clearer system prompt emphasising the separation of facts,
-  analysis and inference and instructing the model to say when
-  supporting data is insufficient.
+    * More granular seed selection based on the query.  In addition to
+    weighting speeches, press releases, enforcement and crypto, the
+    agent now explicitly targets rulemaking pages when regulatory
+    amendments are mentioned and enforcement pages when the question
+    mentions enforcement, charges or settlements.
+    * Weighted keyword scoring that accounts for both the total number
+    of matching tokens and their proportion relative to the query.
+    This helps promote pages that discuss most of the query terms
+    rather than those that simply mention one.
+    * More robust truncation of crawled content and duplicate filtering.
+    Each document’s content is trimmed to a fixed number of characters
+    to reduce token usage, and identical URLs are deduplicated early.
+    * Defensive programming around crawler failures: if no pages are
+    fetched, the agent returns a polite message rather than raising
+    an exception.
+    * Clearer system prompt emphasising the separation of facts,
+    analysis and inference and instructing the model to say when
+    supporting data is insufficient.
 
-Usage
------
-Import the ``answer_sec_query`` function and call it with a user
-query and the recent chat history.  The function returns a Markdown
-string containing the answer and a sources section listing all
-sec.gov URLs referenced.
+    Usage
+    -----
+    Import the ``answer_sec_query`` function and call it with a user
+    query and the recent chat history.  The function returns a Markdown
+    string containing the answer and a sources section listing all
+    sec.gov URLs referenced.
 """
 
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# ``crawl_sec_pages`` is provided by the ``new_crawler_tool`` package.  It
-# performs a depth‑limited crawl starting from a list of seed URLs and
-# returns a list of documents with ``source_url`` and ``content`` keys.
-from new_crawler_tool import crawl_sec_pages
+# ``hybrid_search`` queries the Pinecone SEC knowledge base (populated by
+# ``crypto_ingest``) and returns documents with ``source_url`` and ``content``.
+from crypto_ingest import hybrid_search
 
 # Load environment variables (e.g., API keys) from an .env file if
 # present.  This call is idempotent and safe to repeat.
@@ -140,143 +138,6 @@ def _estimate_tokens_and_cost(
     return in_tok, out_tok, cost
 
 
-# Core SEC entry points (sec.gov only).  We bias our crawl to these
-# starting points instead of generic web search.  Additional seeds
-# may be appended based on the user's query.
-SEC_BASE_SOURCES: List[str] = [
-    "https://www.sec.gov/newsroom/speeches-statements",
-    "https://www.sec.gov/newsroom/press-releases",
-    "https://www.sec.gov/featured-topics/crypto-task-force",
-    "https://www.sec.gov/featured-topics/cybersecurity",
-    "https://www.sec.gov/enforcement-litigation/litigation-releases",
-    "https://www.sec.gov/rules-regulations/rulemaking-activity",
-]
-
-
-def _normalize_tokens(text: str) -> List[str]:
-    """
-    Normalise a piece of text into lowercase alphanumeric tokens.
-
-    Non‑word characters are treated as delimiters.  Empty tokens
-    are discarded.  This helper is used for computing simple
-    keyword overlap between the query and document content.
-    """
-    return [tok for tok in re.split(r"\W+", text.lower()) if tok]
-
-
-def _select_seed_urls_for_query(query: str) -> List[str]:
-    """
-    Heuristic selection of SEC index pages to crawl for a given query.
-
-    The agent cannot search the open web; instead, it uses a small set
-    of curated SEC pages as entry points.  This function analyses the
-    query to decide which of those pages are most likely to contain
-    relevant material.  The returned list is deduplicated and ordered
-    with the most relevant seeds first.
-
-    Parameters
-    ----------
-    query : str
-        User's natural language question.
-
-    Returns
-    -------
-    List[str]
-        A list of SEC URLs to serve as crawler seeds.
-    """
-    q = query.lower()
-    seeds: List[str] = []
-
-    # Always include rulemaking and enforcement sources.  Many
-    # questions relate to new rules or enforcement actions even if
-    # the query does not explicitly mention them.
-    seeds.append("https://www.sec.gov/rules-regulations/rulemaking-activity")
-    seeds.append("https://www.sec.gov/enforcement-litigation/litigation-releases")
-
-    # Speeches and commissioner statements are key for interpretive
-    # guidance and policy direction.
-    if any(word in q for word in ("speech", "remarks", "statement", "commissioner", "chair", "uyeda", "gallagher", "woody", "peirce", "crenshaw", "litzman", "atlkins")):
-        seeds.append("https://www.sec.gov/newsroom/speeches-statements")
-
-    # Press releases cover announcements, charges, and settlements.
-    if any(word in q for word in ("press release", "announcement", "charges", "settled", "settlement", "fine", "indictment")):
-        seeds.append("https://www.sec.gov/newsroom/press-releases")
-
-    # Target crypto‑specific index when crypto‑related terms appear.
-    if any(word in q for word in ("crypto", "digital asset", "token", "stablecoin", "defi")):
-        seeds.append("https://www.sec.gov/featured-topics/crypto-task-force")
-
-    # Cybersecurity and incidents may relate to breach disclosures.
-    if any(word in q for word in ("cyber", "incident", "breach", "ransomware", "cybersecurity")):
-        seeds.append("https://www.sec.gov/featured-topics/cybersecurity")
-
-    # Explicit triggers for rulemaking (e.g., amendments, proposals).
-    if any(word in q for word in ("rule", "regulation", "amendment", "proposal", "release", "no‑action", "guidance")):
-        seeds.append("https://www.sec.gov/rules-regulations/rulemaking-activity")
-
-    # Explicit triggers for enforcement actions.
-    if any(word in q for word in ("enforcement", "fraud", "penalty", "complaint", "litigation", "charge", "commingling")):
-        seeds.append("https://www.sec.gov/enforcement-litigation/litigation-releases")
-
-    # Fallback: if none of the above triggers matched, include all base sources.
-    if len(seeds) == 2:  # only rulemaking + enforcement added
-        seeds.extend(SEC_BASE_SOURCES)
-
-    # Deduplicate while preserving order.
-    seen = set()
-    deduped: List[str] = []
-    for url in seeds:
-        if url not in seen:
-            seen.add(url)
-            deduped.append(url)
-    return deduped
-
-
-def _score_documents_for_query(query: str, documents: Sequence[Dict[str, str]]) -> List[Dict[str, str]]:
-    """
-    Rank documents by how well they match the query using a simple
-    keyword scoring algorithm.
-
-    The score is the sum of two components:
-
-    * ``hits``: the number of unique query tokens found anywhere in
-      the document content.
-    * ``coverage``: the fraction of query tokens that appear in the
-      document.  This penalises documents that match only one word
-      from a multi‑term query.
-
-    Documents with higher scores are considered more relevant.  Only
-    documents that contain at least one query token are returned.
-
-    Parameters
-    ----------
-    query : str
-        User's natural language question.
-    documents : sequence of dict
-        Each dict must have ``"content"`` and ``"source_url"`` keys.
-
-    Returns
-    -------
-    List[Dict[str, str]]
-        The input documents sorted in descending order of relevance.
-    """
-    q_tokens = set(_normalize_tokens(query))
-    ranked: List[Tuple[float, Dict[str, str]]] = []
-    for doc in documents:
-        content = (doc.get("content") or "").lower()
-        if not content:
-            continue
-        # Compute how many query tokens occur in the document.
-        hits = sum(1 for tok in q_tokens if tok in content)
-        if hits == 0:
-            continue  # skip docs that don't mention any query token
-        coverage = hits / len(q_tokens) if q_tokens else 0
-        score = hits + coverage  # simple linear combination
-        ranked.append((score, doc))
-    ranked.sort(key=lambda x: x[0], reverse=True)
-    return [doc for _, doc in ranked]
-
-
 def _build_history_snippet(messages: Sequence[Dict[str, str]], max_chars: int = 2000) -> str:
     """
     Convert recent chat history into a text snippet for context.
@@ -316,17 +177,17 @@ def answer_sec_query(
     query: str,
     messages: Sequence[Dict[str, str]],
     *,
-    max_crawl_pages: int = 40,
     max_docs_for_context: int = 8,
+    pinecone_top_k: int = 20,
+    pinecone_alpha: float = 0.5,
 ) -> str:
     """
-    Answer a user question about SEC topics using only sec.gov content.
+    Answer a user question about SEC topics using sec.gov content from Pinecone.
 
-    This function orchestrates the pipeline: selecting seed URLs,
-    crawling the SEC site, ranking the retrieved documents, and
-    invoking the OpenAI language model with the best context.  The
-    response is formatted in Markdown and always includes a sources
-    section referencing the SEC URLs used.
+    This function retrieves relevant documents via hybrid search from the
+    Pinecone SEC knowledge base, then invokes the OpenAI language model with
+    the best context.  The response is formatted in Markdown and always
+    includes a sources section referencing the sec.gov URLs used.
 
     Parameters
     ----------
@@ -335,79 +196,54 @@ def answer_sec_query(
     messages : sequence of dict
         Chat history as a list of objects with ``"role"`` and
         ``"content"`` fields.
-    max_crawl_pages : int, optional
-        Maximum number of pages to fetch during the crawl.  Lower
-        values reduce latency and token usage but may miss some
-        documents.
     max_docs_for_context : int, optional
         Number of top documents to include in the context passed to
         the language model.  Excess documents increase cost without
         necessarily improving the answer quality.
+    pinecone_top_k : int, optional
+        Number of results to fetch from Pinecone hybrid search before
+        truncating to max_docs_for_context.
+    pinecone_alpha : float, optional
+        Blend factor for hybrid search (0 = sparse-only, 1 = dense-only, 0.5 = balanced).
 
     Returns
     -------
     str
         A Markdown string containing the answer and a sources list.
     """
-    # 1. Determine which SEC entry pages to crawl.
-    seed_urls = _select_seed_urls_for_query(query)
-    print(f"Selected {len(seed_urls)} SEC seed URL(s) for query.")
-
-    # 2. Crawl SEC.gov.  Limit depth to 1 so we only fetch index pages
-    # and their immediate children.  The crawler may still follow
-    # relative links; adjust ``max_depth`` in crawl_sec_pages if deeper
-    # exploration is warranted.
+    # 1. Retrieve relevant documents from Pinecone (hybrid search).
     try:
-        documents = crawl_sec_pages(
-            seed_urls=seed_urls,
-            max_depth=1,
-            max_pages=max_crawl_pages,
-            delay_seconds=1.5,
+        documents = hybrid_search(
+            query=query,
+            top_k=pinecone_top_k,
+            alpha=pinecone_alpha,
         )
     except Exception as e:
-        # In the event of a crawler error, log and return early.
-        print(f"Crawler error: {e}")
+        print(f"Pinecone search error: {e}")
         return (
-            "I encountered an error while retrieving content from sec.gov. "
+            "I encountered an error while searching the SEC knowledge base. "
             "Please try again later or refine your question.\n\n"
             "Sources: (none)"
         )
-    print(f"Crawled {len(documents)} SEC page(s) for query.")
 
-    # If the crawler returned no documents, inform the user.
+    print(f"Retrieved {len(documents)} document(s) from Pinecone for query.")
+
     if not documents:
         return (
-            "I couldn't retrieve any relevant content from sec.gov right now. "
-            "Please try again later or narrow your question.\n\n"
-            "Sources: (no sec.gov pages could be fetched)"
+            "I couldn't find any relevant content in the SEC knowledge base for this question. "
+            "Please try rephrasing or narrowing your question.\n\n"
+            "Sources: (no sec.gov documents matched)"
         )
 
-    # Deduplicate documents by URL to prevent duplicate context entries.
-    seen_urls: set[str] = set()
-    deduped_docs: List[Dict[str, str]] = []
+    # 2. Truncate content per document and select top N for context.
+    MAX_CHARS_PER_DOC = 6000
     for doc in documents:
-        url = doc.get("source_url") or ""
-        if url and url not in seen_urls:
-            seen_urls.add(url)
-            # Truncate content to reduce token count and remove high
-            # overlap across large documents.  6000 characters is
-            # roughly 1500 tokens.
-            content = doc.get("content") or ""
-            doc["content"] = content[:6000]
-            deduped_docs.append(doc)
+        content = doc.get("content") or ""
+        doc["content"] = content[:MAX_CHARS_PER_DOC]
 
-    # 3. Rank documents by relevance to the query.
-    ranked_docs = _score_documents_for_query(query, deduped_docs)
-    # If no document matches even a single token, include a few
-    # unranked documents so that the model has some context.  Use
-    # whichever deduped docs are available.
-    if not ranked_docs:
-        ranked_docs = deduped_docs
+    top_docs = documents[:max_docs_for_context]
 
-    # Select the top N documents for the model context.
-    top_docs = ranked_docs[:max_docs_for_context]
-
-    # Build the JSON payload that will be passed to the model.  Keep
+    # 3. Build the JSON payload that will be passed to the model.  Keep
     # only the fields we need (source_url and content).  Remove
     # newline characters in content to make the JSON more compact.
     context_payload: List[Dict[str, str]] = []
@@ -431,10 +267,10 @@ Rules:
  - If the SEC documents do not contain enough information to answer confidently, say so and
    suggest what the user might look for on sec.gov.
  - Write in clear, non‑legalistic English.
- - Separate, where useful:
-   - FACTS (directly supported by the SEC documents)
-   - ANALYSIS (your interpretation)
-   - INFERENCE (your forecast or best guess)
+ - Provide concise factual answers strictly based on the SEC documents. Do **not** offer
+   personal interpretations or forecasts unless the documents themselves include such
+   analysis. You may summarise the SEC's own interpretive statements when they appear,
+   but avoid adding inference beyond what is stated.
  - At the **end** of every answer, include a Markdown section titled "Sources" with bullet points:
 
    Sources:
@@ -477,7 +313,7 @@ Instructions:
         model="gpt-5.2",
         reasoning={"effort": "medium"},
         input=full_prompt,
-        max_output_tokens=2000,
+        max_output_tokens=1000,
     )
 
     answer = resp.output_text or ""
@@ -492,8 +328,9 @@ Instructions:
 
 if __name__ == "__main__":
     # Example usage: run a quick test query when executed directly.
-    q = "What did Commissioner Uyeda recently say about tokenisation and crypto custody?"
+    q = "Can the system map which crypto-asset categories (stablecoins, DeFi tokens, NFTs) are most frequently cited in SEC enforcement actions or policy statements?"
     ans = answer_sec_query(q, messages=[])
-    out_path = Path("sec_chat_example_answer.md")
-    out_path.write_text(ans, encoding="utf-8")
-    print(f"\nAnswer written to {out_path.resolve()}\n")
+    # out_path = Path("sec_chat_example_answer.md")
+    # out_path.write_text(ans, encoding="utf-8")
+    # print(f"\nAnswer written to {out_path.resolve()}\n")
+    print(f"\nAnswer: {ans}\n")

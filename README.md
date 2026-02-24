@@ -262,8 +262,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Built with [LangGraph](https://github.com/langchain-ai/langgraph) for agent orchestration
 - Powered by [Pinecone](https://www.pinecone.io/) for vector search
 - Uses [Streamlit](https://streamlit.io/) for the web interface
-- OpenAI for embeddings and language models
-
-## 📧 Support
-
-For issues, questions, or contributions, please open an issue on GitHub.---**Note**: This application requires access to a Pinecone index containing SEC Crypto documents. Ensure your index is properly configured and populated before use.
+- OpenAI for embeddings and language models## 📧 SupportFor issues, questions, or contributions, please open an issue on GitHub.---**Note**: This application requires access to a Pinecone index containing SEC Crypto documents. Ensure your index is properly configured and populated before use.
