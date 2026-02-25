@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Tuple
 
@@ -44,6 +45,17 @@ client = OpenAI()
 
 # Optional callback for emitting progress updates to the UI.
 ProgressCallback = Callable[[Dict[str, Any]], None]
+
+# Logger for pipeline checkpoints and errors.
+logger = logging.getLogger("sec_chat_agent")
+if not logger.handlers:
+    _handler = logging.StreamHandler()
+    _formatter = logging.Formatter(
+        "[%(asctime)s] [%(levelname)s] %(name)s - %(message)s"
+    )
+    _handler.setFormatter(_formatter)
+    logger.addHandler(_handler)
+logger.setLevel(logging.INFO)
 
 # Approximate $ per 1M tokens for cost logging.  Keep in sync with v2.
 MODEL_COST_PER_1M: Dict[str, Tuple[float, float]] = {
@@ -81,8 +93,12 @@ def _estimate_tokens_and_cost(
         out_tok = max(1, len(output_str) // 4)
     price = MODEL_COST_PER_1M.get(model, (0.20, 0.80))
     cost = (in_tok * price[0] + out_tok * price[1]) / 1_000_000
-    print(
-        f"  [{step_name}] Tokens: {in_tok:,} in, {out_tok:,} out | Est. cost: ${cost:.4f}"
+    logger.info(
+        "  [%s] Tokens: %s in, %s out | Est. cost: $%.4f",
+        step_name,
+        f"{in_tok:,}",
+        f"{out_tok:,}",
+        cost,
     )
     return in_tok, out_tok, cost
 
@@ -160,10 +176,10 @@ Instructions:
                 cleaned.append(tt)
         if not cleaned:
             raise ValueError("No valid topics in JSON.")
-        print(f"[v3] Generated topics: {cleaned}")
+        logger.info("[v3] Generated topics: %s", cleaned)
         return cleaned[:max_topics]
     except Exception as e:
-        print(f"[v3] Topic generation failed, falling back to raw query: {e}")
+        logger.warning("[v3] Topic generation failed, falling back to raw query: %s", e)
         return [query]
 
 
@@ -186,7 +202,7 @@ def _retrieve_sec_chunks_for_topics(
         try:
             docs = hybrid_search(query=topic, top_k=top_k_per_topic, alpha=alpha)
         except Exception as e:
-            print(f"[v3] hybrid_search error for topic '{topic}': {e}")
+            logger.error("[v3] hybrid_search error for topic '%s': %s", topic, e)
             continue
 
         for doc in docs:
@@ -203,7 +219,7 @@ def _retrieve_sec_chunks_for_topics(
             seen_keys.add(key)
             aggregated.append(RetrievedChunk(source_url=key_src, content=content))
 
-    print(f"[v3] Retrieved {len(aggregated)} unique chunk(s) across topics.")
+    logger.info("[v3] Retrieved %d unique chunk(s) across topics.", len(aggregated))
     return aggregated[:max_total]
 
 
@@ -339,7 +355,7 @@ Respond with JSON only.
         if not isinstance(ratings, list):
             raise ValueError("ratings is not a list")
     except Exception as e:
-        print(f"[v3] Chunk rating failed, returning default ratings: {e}")
+        logger.warning("[v3] Chunk rating failed, returning default ratings: %s", e)
         ratings = default_ratings
 
     # Map ratings by index.
@@ -457,7 +473,7 @@ Instructions:
             if not summary:
                 continue
         except Exception as e:
-            print(f"[v3] Summarisation failed for chunk {idx}: {e}")
+            logger.warning("[v3] Summarisation failed for chunk %d: %s", idx, e)
             continue
 
         summaries.append(
@@ -469,7 +485,7 @@ Instructions:
             }
         )
 
-    print(f"[v3] Generated {len(summaries)} summaries.")
+    logger.info("[v3] Generated %d summaries.", len(summaries))
     return summaries
 
 
@@ -482,9 +498,10 @@ def _generate_final_answer_from_summaries(
     """
     if not summaries:
         # Log a clear reason when we fall back to the generic \"insufficient material\" message.
-        print(
+        logger.warning(
             "[v3] No document summaries available for final answer; "
-            f"this usually means full-document fetch or summarisation failed for query: {query!r}"
+            "this usually means full-document fetch or summarisation failed for query: %r",
+            query,
         )
         return (
             "I could not find sufficient relevant SEC.gov material in the knowledge base "
@@ -557,7 +574,7 @@ Instructions:
         if answer:
             return answer
     except Exception as e:
-        print(f"[v3] Final answer generation failed: {e}")
+        logger.error("[v3] Final answer generation failed: %s", e)
 
     return (
         "I wasn't able to generate an answer from the available SEC summaries.\n\n"
@@ -665,7 +682,9 @@ Instructions:
         filtered = [u for u in top_urls if u in doc_candidates]
         return filtered[:top_n] or list(doc_candidates.keys())[:top_n]
     except Exception as e:
-        print(f"[v3] Document reranking failed, falling back to heuristic: {e}")
+        logger.warning(
+            "[v3] Document reranking failed, falling back to heuristic: %s", e
+        )
         # Heuristic: sort URLs by number of chunks (descending).
         sorted_urls = sorted(
             doc_candidates.items(), key=lambda kv: len(kv[1]), reverse=True
@@ -690,7 +709,7 @@ def _fetch_full_document_text(url: str, *, max_chars: int = 60000) -> str:
             _, main_text = extract_text_from_html(url, resp.text)
             text = main_text
     except Exception as e:
-        print(f"[v3] Error extracting full document for {url}: {e}")
+        logger.warning("[v3] Error extracting full document for %s: %s", url, e)
         return ""
     text = " ".join(text.split())
     if len(text) > max_chars:
@@ -727,12 +746,13 @@ def _summarize_full_documents(
                 pass
         doc_text = _fetch_full_document_text(url)
         if not doc_text:
-            print(f"[v3] No text extracted for {url} (fetch or parse failure).")
+            logger.warning("[v3] No text extracted for %s (fetch or parse failure).", url)
             continue
         if len(doc_text) < 500:
-            print(
-                f"[v3] Skipping {url}: extracted text too short "
-                f"({len(doc_text)} characters)."
+            logger.info(
+                "[v3] Skipping %s: extracted text too short (%d characters).",
+                url,
+                len(doc_text),
             )
             continue
 
@@ -781,7 +801,7 @@ Instructions:
             if not summary:
                 continue
         except Exception as e:
-            print(f"[v3] Full-document summarisation failed for {url}: {e}")
+            logger.error("[v3] Full-document summarisation failed for %s: %s", url, e)
             continue
 
         summaries.append(
@@ -804,7 +824,7 @@ Instructions:
             except Exception:
                 pass
 
-    print(f"[v3] Generated {len(summaries)} full-document summaries.")
+    logger.info("[v3] Generated %d full-document summaries.", len(summaries))
     return summaries
 
 
@@ -816,7 +836,7 @@ def run_sec_query_experiment_v3(
     """
     Run the full v3 pipeline and return structured artefacts for inspection.
     """
-    print(f"[v3] Running SEC query experiment for: {query!r}")
+    logger.info("[v3] Running SEC query experiment for: %r", query)
 
     topics = _generate_sec_topics(query)
     raw_chunks = _retrieve_sec_chunks_for_topics(
@@ -824,9 +844,8 @@ def run_sec_query_experiment_v3(
     )
 
     if not raw_chunks:
-        print(
-            "[v3] No raw chunks retrieved for query "
-            f"{query!r}; topics={topics!r}"
+        logger.warning(
+            "[v3] No raw chunks retrieved for query %r; topics=%r", query, topics
         )
         final_answer = (
             "I couldn't find any relevant content in the SEC knowledge base for this question. "
@@ -869,7 +888,7 @@ def run_sec_query_experiment_v3_docs(
     """
     Document-level variant of the v3 pipeline with reranking and full-document summaries.
     """
-    print(f"[v3-docs] Running SEC query experiment (docs) for: {query!r}")
+    logger.info("[v3-docs] Running SEC query experiment (docs) for: %r", query)
 
     topics = _generate_sec_topics(query)
     if progress_cb is not None:
@@ -902,9 +921,11 @@ def run_sec_query_experiment_v3_docs(
             pass
 
     if not raw_chunks:
-        print(
-            "[v3-docs] No raw chunks retrieved for query "
-            f"{query!r}; topics={topics!r}, retrieval_queries={retrieval_queries!r}"
+        logger.warning(
+            "[v3-docs] No raw chunks retrieved for query %r; topics=%r, retrieval_queries=%r",
+            query,
+            topics,
+            retrieval_queries,
         )
         final_answer = (
             "I couldn't find any relevant content in the SEC knowledge base for this question. "
