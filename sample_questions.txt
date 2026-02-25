@@ -1,6 +1,5 @@
 How has the SEC’s interpretation of the Howey Test evolved across enforcement cases related to crypto tokens, and what classification patterns can the knowledge base identify?
 What trends can be derived from cross-agency statements (SEC vs. CFTC) regarding jurisdictional overlap and harmonization efforts?
-Can the system map which crypto-asset categories (stablecoins, DeFi tokens, NFTs) are most frequently cited in SEC enforcement actions or policy statements?
 How does the SEC’s current regulatory framework compare with the EU’s MiCA regime in terms of market authorization, investor protection, and stablecoin oversight?
 Can the system generate a comparative matrix of SEC regulations versus the UK’s phased crypto regime and highlight convergence or divergence areas?
 What regulatory approaches in MiCA or FATF guidance could be recommended to close gaps in the SEC’s current approach to DeFi oversight?
