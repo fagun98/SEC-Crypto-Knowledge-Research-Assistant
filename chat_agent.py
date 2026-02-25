@@ -481,6 +481,11 @@ def _generate_final_answer_from_summaries(
     Use summarised evidence to generate the final SEC answer.
     """
     if not summaries:
+        # Log a clear reason when we fall back to the generic \"insufficient material\" message.
+        print(
+            "[v3] No document summaries available for final answer; "
+            f"this usually means full-document fetch or summarisation failed for query: {query!r}"
+        )
         return (
             "I could not find sufficient relevant SEC.gov material in the knowledge base "
             "to answer this question with confidence.\n\n"
@@ -721,7 +726,14 @@ def _summarize_full_documents(
             except Exception:
                 pass
         doc_text = _fetch_full_document_text(url)
-        if not doc_text or len(doc_text) < 500:
+        if not doc_text:
+            print(f"[v3] No text extracted for {url} (fetch or parse failure).")
+            continue
+        if len(doc_text) < 500:
+            print(
+                f"[v3] Skipping {url}: extracted text too short "
+                f"({len(doc_text)} characters)."
+            )
             continue
 
         system_prompt = """
@@ -812,6 +824,10 @@ def run_sec_query_experiment_v3(
     )
 
     if not raw_chunks:
+        print(
+            "[v3] No raw chunks retrieved for query "
+            f"{query!r}; topics={topics!r}"
+        )
         final_answer = (
             "I couldn't find any relevant content in the SEC knowledge base for this question. "
             "Please try rephrasing or narrowing your question or consult the SEC website directly."
@@ -886,6 +902,10 @@ def run_sec_query_experiment_v3_docs(
             pass
 
     if not raw_chunks:
+        print(
+            "[v3-docs] No raw chunks retrieved for query "
+            f"{query!r}; topics={topics!r}, retrieval_queries={retrieval_queries!r}"
+        )
         final_answer = (
             "I couldn't find any relevant content in the SEC knowledge base for this question. "
             "Please try rephrasing or narrowing your question or consult the SEC website directly."
