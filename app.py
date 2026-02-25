@@ -8,6 +8,7 @@ from chat_agent import answer_sec_query_v3_docs_with_progress
 
 
 CACHE_PATH = Path(__file__).resolve().parent / "qa_cache.json"
+SAMPLE_QUESTIONS_PATH = Path(__file__).resolve().parent / "sample_questions.txt"
 
 
 def _normalise_query(query: str) -> str:
@@ -60,6 +61,22 @@ def set_cached_answer(query: str, answer: str) -> None:
     cache = _load_cache()
     cache[key] = answer
     _save_cache(cache)
+
+
+def _load_sample_questions(max_items: int = 10) -> List[str]:
+    questions: List[str] = []
+    try:
+        if not SAMPLE_QUESTIONS_PATH.exists():
+            return questions
+        for line in SAMPLE_QUESTIONS_PATH.read_text(encoding="utf-8").splitlines():
+            q = line.strip()
+            if q:
+                questions.append(q)
+            if len(questions) >= max_items:
+                break
+    except Exception:
+        return []
+    return questions
 
 def init_chat_state() -> None:
     """
@@ -218,6 +235,15 @@ def render_chat_ui() -> None:
 
     st.markdown("---")
 
+    # Sample questions expander
+    sample_questions = _load_sample_questions(max_items=12)
+    if sample_questions:
+        with st.expander("Sample questions to try"):
+            for idx, q in enumerate(sample_questions):
+                if st.button(q, key=f"sample-q-{idx}"):
+                    st.session_state["queued_prompt"] = q
+                    st.rerun()
+
     # Optional controls row (clear chat)
     controls_col, _ = st.columns([1, 5])
     with controls_col:
@@ -246,8 +272,13 @@ def render_chat_ui() -> None:
             with st.chat_message("user"):
                 st.markdown(content)
 
-    # Single chat input for the current turn.
-    prompt = st.chat_input("Ask a question about SEC crypto, custody, or enforcement...")
+    # Single chat input for the current turn (or queued sample question).
+    queued = st.session_state.pop("queued_prompt", None)
+    if queued is not None:
+        prompt = queued
+        _ = st.chat_input("Ask a question about SEC crypto, custody, or enforcement...")
+    else:
+        prompt = st.chat_input("Ask a question about SEC crypto, custody, or enforcement...")
     if prompt:
         prompt = prompt.strip()
         if not prompt:
