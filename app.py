@@ -4,7 +4,7 @@ from pathlib import Path
 
 import json
 import streamlit as st
-from chat_agent import answer_sec_query_v3_docs_with_progress
+from chat_agent import answer_sec_query_v3_docs, answer_sec_query_v3_docs_with_progress
 
 
 CACHE_PATH = Path(__file__).resolve().parent / "qa_cache.json"
@@ -88,6 +88,10 @@ def init_chat_state() -> None:
     """
     if "messages" not in st.session_state:
         st.session_state.messages: List[Dict[str, str]] = []
+    if "queued_prompt" not in st.session_state:
+        st.session_state.queued_prompt = None
+    if "is_generating" not in st.session_state:
+        st.session_state.is_generating = False
 
 
 def layout_page() -> None:
@@ -211,8 +215,11 @@ def perform_chat(
     """
     try:
         if progress_cb is not None:
-            return answer_sec_query_v3_docs_with_progress(query=message, progress_cb=progress_cb)
-        return answer_sec_query_v3_docs_with_progress(query=message, progress_cb=lambda _u: None)
+            return answer_sec_query_v3_docs_with_progress(
+                query=message, progress_cb=progress_cb
+            )
+        # Non-progress fast path, still using the same doc pipeline.
+        return answer_sec_query_v3_docs(query=message)
     except Exception as e:
         return (
             "I encountered an error while processing your request: "
@@ -235,19 +242,21 @@ def render_chat_ui() -> None:
 
     st.markdown("---")
 
+    is_generating = bool(st.session_state.get("is_generating", False))
+
     # Sample questions expander
     sample_questions = _load_sample_questions(max_items=12)
     if sample_questions:
         with st.expander("Sample questions to try"):
             for idx, q in enumerate(sample_questions):
-                if st.button(q, key=f"sample-q-{idx}"):
+                if st.button(q, key=f"sample-q-{idx}", disabled=is_generating):
                     st.session_state["queued_prompt"] = q
                     st.rerun()
 
     # Optional controls row (clear chat)
     controls_col, _ = st.columns([1, 5])
     with controls_col:
-        if st.button("Clear chat"):
+        if st.button("Clear chat", disabled=is_generating):
             st.session_state.messages = []
             st.rerun()
 
@@ -278,10 +287,17 @@ def render_chat_ui() -> None:
         prompt = queued
         _ = st.chat_input("Ask a question about SEC crypto, custody, or enforcement...")
     else:
-        prompt = st.chat_input("Ask a question about SEC crypto, custody, or enforcement...")
+        prompt = st.chat_input(
+            "Ask a question about SEC crypto, custody, or enforcement...",
+            disabled=is_generating,
+        )
     if prompt:
         prompt = prompt.strip()
         if not prompt:
+            return
+
+        if is_generating:
+            st.info("An answer is already being generated. Please wait for it to complete.")
             return
 
         cached = get_cached_answer(prompt)
@@ -295,82 +311,88 @@ def render_chat_ui() -> None:
 
         # Append the user message to the visible conversation.
         st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.is_generating = True
 
-        with st.chat_message("assistant"):
-            status_placeholder = st.empty()
-            progress_bar = st.progress(0)
-            details_placeholder = st.empty()
+        try:
+            with st.chat_message("assistant"):
+                status_placeholder = st.empty()
+                progress_bar = st.progress(0)
+                details_placeholder = st.empty()
 
-            stage_percent = {
-                "topics": 15,
-                "retrieval_queries": 25,
-                "retrieval_done": 40,
-                "candidates": 55,
-                "reranked": 65,
-                "fetch_doc": 75,
-                "doc_summarized": 85,
-            }
+                stage_percent = {
+                    "topics": 15,
+                    "retrieval_queries": 25,
+                    "retrieval_done": 40,
+                    "candidates": 55,
+                    "reranked": 65,
+                    "fetch_doc": 75,
+                    "doc_summarized": 85,
+                }
 
-            def _progress_cb(update: Dict[str, Any]) -> None:
-                stage = str(update.get("stage") or "").strip()
-                percent = stage_percent.get(stage, 10)
+                def _progress_cb(update: Dict[str, Any]) -> None:
+                    stage = str(update.get("stage") or "").strip()
+                    percent = stage_percent.get(stage, 10)
 
-                title = "Working…"
-                if stage == "topics":
-                    title = "Generating topics"
-                elif stage == "retrieval_queries":
-                    title = "Building retrieval queries"
-                elif stage == "retrieval_done":
-                    title = "Retrieving SEC index matches"
-                elif stage == "candidates":
-                    title = "Preparing candidate SEC URLs"
-                elif stage == "reranked":
-                    title = "Selecting top SEC documents"
-                elif stage == "fetch_doc":
-                    title = "Fetching and reading SEC documents"
-                elif stage == "doc_summarized":
-                    title = "Summarising documents"
+                    title = "Working…"
+                    if stage == "topics":
+                        title = "Generating topics"
+                    elif stage == "retrieval_queries":
+                        title = "Building retrieval queries"
+                    elif stage == "retrieval_done":
+                        title = "Retrieving SEC index matches"
+                    elif stage == "candidates":
+                        title = "Preparing candidate SEC URLs"
+                    elif stage == "reranked":
+                        title = "Selecting top SEC documents"
+                    elif stage == "fetch_doc":
+                        title = "Fetching and reading SEC documents"
+                    elif stage == "doc_summarized":
+                        title = "Summarising documents"
 
-                progress_bar.progress(min(max(int(percent), 0), 100))
-                status_placeholder.markdown(f"**{title}**")
+                    progress_bar.progress(min(max(int(percent), 0), 100))
+                    status_placeholder.markdown(f"**{title}**")
 
-                topics = update.get("topics")
-                if isinstance(topics, list) and topics:
-                    bullets = "\n".join(f"- {t}" for t in topics[:10] if isinstance(t, str))
-                    details_placeholder.markdown(f"**Topics**\n{bullets}")
-                    return
+                    topics = update.get("topics")
+                    if isinstance(topics, list) and topics:
+                        bullets = "\n".join(
+                            f"- {t}" for t in topics[:10] if isinstance(t, str)
+                        )
+                        details_placeholder.markdown(f"**Topics**\n{bullets}")
+                        return
 
-                selected_urls = update.get("selected_urls")
-                if isinstance(selected_urls, list) and selected_urls:
-                    bullets = "\n".join(
-                        f"- {u}" for u in selected_urls[:10] if isinstance(u, str)
-                    )
-                    details_placeholder.markdown(f"**Selected SEC URLs**\n{bullets}")
-                    return
+                    selected_urls = update.get("selected_urls")
+                    if isinstance(selected_urls, list) and selected_urls:
+                        bullets = "\n".join(
+                            f"- {u}" for u in selected_urls[:10] if isinstance(u, str)
+                        )
+                        details_placeholder.markdown(f"**Selected SEC URLs**\n{bullets}")
+                        return
 
-                candidate_urls = update.get("candidate_urls")
-                if isinstance(candidate_urls, list) and candidate_urls:
-                    bullets = "\n".join(
-                        f"- {u}" for u in candidate_urls[:10] if isinstance(u, str)
-                    )
-                    details_placeholder.markdown(f"**Candidate SEC URLs**\n{bullets}")
-                    return
+                    candidate_urls = update.get("candidate_urls")
+                    if isinstance(candidate_urls, list) and candidate_urls:
+                        bullets = "\n".join(
+                            f"- {u}" for u in candidate_urls[:10] if isinstance(u, str)
+                        )
+                        details_placeholder.markdown(f"**Candidate SEC URLs**\n{bullets}")
+                        return
 
-                url = update.get("url")
-                if isinstance(url, str) and url.strip():
-                    cur = update.get("current")
-                    total = update.get("total")
-                    suffix = ""
-                    if isinstance(cur, int) and isinstance(total, int) and total > 0:
-                        suffix = f" ({cur}/{total})"
-                    details_placeholder.markdown(f"**Current URL**{suffix}\n- {url}")
+                    url = update.get("url")
+                    if isinstance(url, str) and url.strip():
+                        cur = update.get("current")
+                        total = update.get("total")
+                        suffix = ""
+                        if isinstance(cur, int) and isinstance(total, int) and total > 0:
+                            suffix = f" ({cur}/{total})"
+                        details_placeholder.markdown(f"**Current URL**{suffix}\n- {url}")
 
-            reply = perform_chat(prompt, history_for_agent, progress_cb=_progress_cb)
+                reply = perform_chat(prompt, history_for_agent, progress_cb=_progress_cb)
 
-            progress_bar.progress(100)
-            status_placeholder.empty()
-            details_placeholder.empty()
-            st.markdown(reply)
+                progress_bar.progress(100)
+                status_placeholder.empty()
+                details_placeholder.empty()
+                st.markdown(reply)
+        finally:
+            st.session_state.is_generating = False
 
         st.session_state.messages.append({"role": "assistant", "content": reply})
         set_cached_answer(prompt, reply)
