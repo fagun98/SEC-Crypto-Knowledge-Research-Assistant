@@ -191,4 +191,3 @@ if __name__ == "__main__":
 
     results = crawl_sec_pages(seed_urls)
     print(results)
-
