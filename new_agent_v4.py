@@ -510,13 +510,32 @@ def generate_crypto_custody_report_v4(
     """
     print("[v4] Phase 1: URL discovery (2 layers, date-filtered)...")
     url_entries = _discover_urls_two_layers(sec_urls, start_date, end_date, delay_seconds=delay_seconds)
-    # Dedupe by url (already done in _discover); also include seed URLs that might be article pages?
-    urls_only = list({e["url"] for e in url_entries})
-    print(f"[v4] Discovered {len(urls_only)} URLs in date range.")
 
     if not url_entries:
         print("[v4] No URLs in range. Returning placeholder.")
         return _placeholder_newsletter(start_date, end_date)
+
+    # Ensure base seed URLs themselves are also summarized (not just the discovered article links).
+    # We add synthetic entries for each SEC seed URL that isn't already in url_entries.
+    seen_urls = {e.get("url", "").strip() for e in url_entries}
+    for base in sec_urls:
+        base = (base or "").strip()
+        if not base.startswith("https://www.sec.gov"):
+            continue
+        if base in seen_urls:
+            continue
+        url_entries.append(
+            {
+                "url": base,
+                # Use start_date as a synthetic date so it passes downstream expectations.
+                "date": start_date,
+                "label": f"Base: {base}",
+            }
+        )
+        seen_urls.add(base)
+
+    urls_only = list(seen_urls)
+    print(f"[v4] Discovered {len(urls_only)} URLs in date range (including base seeds).")
 
     print("[v4] Phase 2: Per-URL content extraction...")
     per_url_summaries = _run_phase2_per_url_extraction(url_entries, delay_seconds=delay_seconds)
@@ -538,6 +557,11 @@ def generate_crypto_custody_report_v4(
 
 
 if __name__ == "__main__":
+    month = 2
+    year = 2026
+    start_date = "2026-02-03"
+    end_date = "2026-02-09"
+
     sec_urls = [
         "https://www.sec.gov/featured-topics/crypto-task-force",
         "https://www.sec.gov/about/divisions-offices/division-trading-markets",
@@ -545,22 +569,13 @@ if __name__ == "__main__":
         "https://www.sec.gov/newsroom/speeches-statements",
         "https://www.sec.gov/enforcement-litigation/litigation-releases",
         "https://www.sec.gov/rules-regulations/rulemaking-activity",
-        "https://www.sec.gov/rules/policy-statements",
-        "https://www.sec.gov/rules/orders",
-        "https://www.sec.gov/rules/interp",
-        "https://www.sec.gov/newsroom/press-releases",
-        "https://www.sec.gov/enforcement/administrative-proceedings",
-        "https://www.sec.gov/enforcement/trading-suspensions",
-        "https://www.sec.gov/enforcement/distributions-harmed-investors",
         "https://www.sec.gov/featured-topics/sec-cftc-harmonization-initiative",
-        "https://www.sec.gov/rules/proposed",
-        "https://www.sec.gov/rules/final",
-        "https://www.sec.gov/about/reports-publications/examination-priorities",
-        "https://www.sec.gov/about/reports-publications/risk-alerts",
+        "https://www.sec.gov/newsroom/press-releases",
+        "https://www.sec.gov/reports",
+        "https://www.sec.gov/about/budget-performance"
+        f"https://www.sec.gov/newsroom/whats-new?search=&year={year}&month={month}"
     ]
 
-    start_date = "2026-02-03"
-    end_date = "2026-02-09"
 
     print("Generating Crypto Custody Intelligence newsletter (v4)...")
     report = generate_crypto_custody_report_v4(
@@ -570,6 +585,6 @@ if __name__ == "__main__":
         use_rag=False,
         delay_seconds=1.5,
     )
-    output_path = "custody_newsletter_v5.md"
+    output_path = "custody_newsletter_v6.md"
     write_newsletter_sync(report, output_path)
     print(f"\nNewsletter ready: {output_path}\n")
