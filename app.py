@@ -1,9 +1,65 @@
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from pathlib import Path
 
+import json
 import streamlit as st
-from chat_agent import answer_sec_query_v3_docs
+from chat_agent import answer_sec_query_v3_docs_with_progress
+
+
+CACHE_PATH = Path(__file__).resolve().parent / "qa_cache.json"
+
+
+def _normalise_query(query: str) -> str:
+    return " ".join((query or "").strip().lower().split())
+
+
+def _load_cache() -> Dict[str, str]:
+    try:
+        if not CACHE_PATH.exists():
+            return {}
+        raw = CACHE_PATH.read_text(encoding="utf-8")
+        data = json.loads(raw) if raw.strip() else {}
+        if isinstance(data, dict):
+            out: Dict[str, str] = {}
+            for k, v in data.items():
+                if isinstance(k, str) and isinstance(v, str):
+                    out[k] = v
+            return out
+    except Exception:
+        return {}
+    return {}
+
+
+def _save_cache(cache: Dict[str, str]) -> None:
+    try:
+        tmp_path = CACHE_PATH.with_suffix(".json.tmp")
+        tmp_path.write_text(
+            json.dumps(cache, ensure_ascii=False, indent=2, sort_keys=True),
+            encoding="utf-8",
+        )
+        tmp_path.replace(CACHE_PATH)
+    except Exception:
+        # Cache is best-effort; never block answering on write failures.
+        return
+
+
+def get_cached_answer(query: str) -> str | None:
+    key = _normalise_query(query)
+    if not key:
+        return None
+    cache = _load_cache()
+    ans = cache.get(key)
+    return ans if isinstance(ans, str) and ans.strip() else None
+
+
+def set_cached_answer(query: str, answer: str) -> None:
+    key = _normalise_query(query)
+    if not key:
+        return
+    cache = _load_cache()
+    cache[key] = answer
+    _save_cache(cache)
 
 def init_chat_state() -> None:
     """
@@ -124,7 +180,12 @@ def _split_answer_and_sources(answer: str) -> Tuple[str, List[Dict[str, str]]]:
     return (body if body else answer.strip()), sources
 
 
-def perform_chat(message: str, history: List[Dict[str, str]]) -> str:
+def perform_chat(
+    message: str,
+    history: List[Dict[str, str]],
+    *,
+    progress_cb: Any | None = None,
+) -> str:
     """
     Call the document-level SEC Q&A chat agent with the current query.
 
@@ -132,7 +193,9 @@ def perform_chat(message: str, history: List[Dict[str, str]]) -> str:
     in the Streamlit UI for conversational context.
     """
     try:
-        return answer_sec_query_v3_docs(query=message)
+        if progress_cb is not None:
+            return answer_sec_query_v3_docs_with_progress(query=message, progress_cb=progress_cb)
+        return answer_sec_query_v3_docs_with_progress(query=message, progress_cb=lambda _u: None)
     except Exception as e:
         return (
             "I encountered an error while processing your request: "
@@ -190,20 +253,96 @@ def render_chat_ui() -> None:
         if not prompt:
             return
 
-        # Capture history before this turn to send as `messages` (chat history).
+        cached = get_cached_answer(prompt)
+        if cached is not None:
+            st.session_state.messages.append({"role": "user", "content": prompt})
+            st.session_state.messages.append({"role": "assistant", "content": cached})
+            st.rerun()
+
+        # Capture history before this turn (UI only).
         history_for_agent = list(st.session_state.messages)
 
         # Append the user message to the visible conversation.
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Loader animation while the agent is working.
-        with st.spinner(
-            "Running SEC document pipeline and generating an evidence-backed answer..."
-        ):
-            reply = perform_chat(prompt, history_for_agent)
+        with st.chat_message("assistant"):
+            status_placeholder = st.empty()
+            progress_bar = st.progress(0)
+            details_placeholder = st.empty()
 
-        # Append assistant response.
+            stage_percent = {
+                "topics": 15,
+                "retrieval_queries": 25,
+                "retrieval_done": 40,
+                "candidates": 55,
+                "reranked": 65,
+                "fetch_doc": 75,
+                "doc_summarized": 85,
+            }
+
+            def _progress_cb(update: Dict[str, Any]) -> None:
+                stage = str(update.get("stage") or "").strip()
+                percent = stage_percent.get(stage, 10)
+
+                title = "Working…"
+                if stage == "topics":
+                    title = "Generating topics"
+                elif stage == "retrieval_queries":
+                    title = "Building retrieval queries"
+                elif stage == "retrieval_done":
+                    title = "Retrieving SEC index matches"
+                elif stage == "candidates":
+                    title = "Preparing candidate SEC URLs"
+                elif stage == "reranked":
+                    title = "Selecting top SEC documents"
+                elif stage == "fetch_doc":
+                    title = "Fetching and reading SEC documents"
+                elif stage == "doc_summarized":
+                    title = "Summarising documents"
+
+                progress_bar.progress(min(max(int(percent), 0), 100))
+                status_placeholder.markdown(f"**{title}**")
+
+                topics = update.get("topics")
+                if isinstance(topics, list) and topics:
+                    bullets = "\n".join(f"- {t}" for t in topics[:10] if isinstance(t, str))
+                    details_placeholder.markdown(f"**Topics**\n{bullets}")
+                    return
+
+                selected_urls = update.get("selected_urls")
+                if isinstance(selected_urls, list) and selected_urls:
+                    bullets = "\n".join(
+                        f"- {u}" for u in selected_urls[:10] if isinstance(u, str)
+                    )
+                    details_placeholder.markdown(f"**Selected SEC URLs**\n{bullets}")
+                    return
+
+                candidate_urls = update.get("candidate_urls")
+                if isinstance(candidate_urls, list) and candidate_urls:
+                    bullets = "\n".join(
+                        f"- {u}" for u in candidate_urls[:10] if isinstance(u, str)
+                    )
+                    details_placeholder.markdown(f"**Candidate SEC URLs**\n{bullets}")
+                    return
+
+                url = update.get("url")
+                if isinstance(url, str) and url.strip():
+                    cur = update.get("current")
+                    total = update.get("total")
+                    suffix = ""
+                    if isinstance(cur, int) and isinstance(total, int) and total > 0:
+                        suffix = f" ({cur}/{total})"
+                    details_placeholder.markdown(f"**Current URL**{suffix}\n- {url}")
+
+            reply = perform_chat(prompt, history_for_agent, progress_cb=_progress_cb)
+
+            progress_bar.progress(100)
+            status_placeholder.empty()
+            details_placeholder.empty()
+            st.markdown(reply)
+
         st.session_state.messages.append({"role": "assistant", "content": reply})
+        set_cached_answer(prompt, reply)
         st.rerun()
 
 

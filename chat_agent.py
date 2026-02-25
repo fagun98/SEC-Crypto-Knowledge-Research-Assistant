@@ -25,7 +25,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import dataclass
-from typing import Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 from dotenv import load_dotenv
 from openai import OpenAI
@@ -41,6 +41,9 @@ from crypto_ingest import (
 load_dotenv()
 
 client = OpenAI()
+
+# Optional callback for emitting progress updates to the UI.
+ProgressCallback = Callable[[Dict[str, Any]], None]
 
 # Approximate $ per 1M tokens for cost logging.  Keep in sync with v2.
 MODEL_COST_PER_1M: Dict[str, Tuple[float, float]] = {
@@ -695,6 +698,7 @@ def _summarize_full_documents(
     urls: List[str],
     *,
     max_docs: int = 7,
+    progress_cb: ProgressCallback | None = None,
 ) -> List[Dict]:
     """
     Summarise full SEC documents (by URL) with respect to the question.
@@ -704,6 +708,18 @@ def _summarize_full_documents(
 
     summaries: List[Dict] = []
     for idx, url in enumerate(urls[:max_docs]):
+        if progress_cb is not None:
+            try:
+                progress_cb(
+                    {
+                        "stage": "fetch_doc",
+                        "url": url,
+                        "current": idx + 1,
+                        "total": min(len(urls), max_docs),
+                    }
+                )
+            except Exception:
+                pass
         doc_text = _fetch_full_document_text(url)
         if not doc_text or len(doc_text) < 500:
             continue
@@ -763,6 +779,18 @@ Instructions:
                 "doc_length": len(doc_text),
             }
         )
+        if progress_cb is not None:
+            try:
+                progress_cb(
+                    {
+                        "stage": "doc_summarized",
+                        "url": url,
+                        "current": idx + 1,
+                        "total": min(len(urls), max_docs),
+                    }
+                )
+            except Exception:
+                pass
 
     print(f"[v3] Generated {len(summaries)} full-document summaries.")
     return summaries
@@ -820,6 +848,7 @@ def run_sec_query_experiment_v3_docs(
     *,
     top_k_matches: int = 30,
     top_docs: int = 10,
+    progress_cb: ProgressCallback | None = None,
 ) -> Dict:
     """
     Document-level variant of the v3 pipeline with reranking and full-document summaries.
@@ -827,12 +856,34 @@ def run_sec_query_experiment_v3_docs(
     print(f"[v3-docs] Running SEC query experiment (docs) for: {query!r}")
 
     topics = _generate_sec_topics(query)
+    if progress_cb is not None:
+        try:
+            progress_cb({"stage": "topics", "topics": topics})
+        except Exception:
+            pass
     retrieval_queries = _build_retrieval_queries(query, topics)
+    if progress_cb is not None:
+        try:
+            progress_cb(
+                {"stage": "retrieval_queries", "retrieval_queries": retrieval_queries}
+            )
+        except Exception:
+            pass
 
     # Reuse the same retrieval helper but pass augmented queries.
     raw_chunks = _retrieve_sec_chunks_for_topics(
         retrieval_queries, top_k_per_topic=10, alpha=0.5, max_total=top_k_matches
     )
+    if progress_cb is not None:
+        try:
+            progress_cb(
+                {
+                    "stage": "retrieval_done",
+                    "chunk_count": len(raw_chunks),
+                }
+            )
+        except Exception:
+            pass
 
     if not raw_chunks:
         final_answer = (
@@ -852,10 +903,29 @@ def run_sec_query_experiment_v3_docs(
 
     truncated_chunks = _truncate_chunks(raw_chunks)
     grouped = _group_chunks_by_url(truncated_chunks)
+    candidate_urls = list(grouped.keys())
+    if progress_cb is not None:
+        try:
+            progress_cb(
+                {
+                    "stage": "candidates",
+                    "candidate_url_count": len(candidate_urls),
+                    "candidate_urls": candidate_urls[:25],
+                }
+            )
+        except Exception:
+            pass
     reranked_urls = _rerank_documents_for_query(
         query, grouped, max_candidates=15, top_n=top_docs
     )
-    doc_summaries = _summarize_full_documents(query, reranked_urls)
+    if progress_cb is not None:
+        try:
+            progress_cb({"stage": "reranked", "selected_urls": reranked_urls})
+        except Exception:
+            pass
+    doc_summaries = _summarize_full_documents(
+        query, reranked_urls, progress_cb=progress_cb
+    )
     final_answer = _generate_final_answer_from_summaries(query, doc_summaries)
 
     return {
@@ -890,6 +960,22 @@ def answer_sec_query_v3_docs(query: str) -> str:
     Wrapper that uses the document-level v3 pipeline.
     """
     result = run_sec_query_experiment_v3_docs(query)
+    answer = (result.get("final_answer") or "").strip()
+    if answer:
+        return answer
+    return (
+        "I wasn't able to generate an answer from the available SEC documents.\n\n"
+        "Sources: see the SEC URLs included in the retrieved context."
+    )
+
+
+def answer_sec_query_v3_docs_with_progress(
+    query: str, progress_cb: ProgressCallback
+) -> str:
+    """
+    Wrapper that uses the document-level v3 pipeline and emits progress updates.
+    """
+    result = run_sec_query_experiment_v3_docs(query, progress_cb=progress_cb)
     answer = (result.get("final_answer") or "").strip()
     if answer:
         return answer
