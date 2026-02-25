@@ -45,6 +45,19 @@ def _fetch_pdf_text(url: str) -> str:
     return " ".join(" ".join(p.split()) for p in parts)
 
 
+def fetch_sec_html(url: str) -> str:
+    """
+    Fetches raw HTML from an SEC.gov page. Use for link-extraction passes where
+    the agent needs to see <a href>, list structure, and date-like text.
+    PDF URLs return empty string (no HTML to parse for links).
+    """
+    if _is_pdf_url(url):
+        return ""
+    response = requests.get(url, headers=_get_headers(), timeout=20)
+    response.raise_for_status()
+    return response.text
+
+
 def fetch_sec_url(url: str) -> str:
     """
     Fetches text content from an SEC.gov page (HTML or PDF).
