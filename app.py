@@ -1,7 +1,9 @@
 from typing import Dict, List, Tuple
 
+from pathlib import Path
+
 import streamlit as st
-from chat_agent import answer_sec_query
+from chat_agent import answer_sec_query_v3_docs
 
 def init_chat_state() -> None:
     """
@@ -18,7 +20,7 @@ def init_chat_state() -> None:
 def layout_page() -> None:
     """Top-level layout and styling."""
     st.set_page_config(
-        page_title="RAG Studio",
+        page_title="SEC Crypto Research Assistant (Beta)",
         page_icon="🔍",
         layout="wide",
         initial_sidebar_state="expanded",
@@ -124,13 +126,13 @@ def _split_answer_and_sources(answer: str) -> Tuple[str, List[Dict[str, str]]]:
 
 def perform_chat(message: str, history: List[Dict[str, str]]) -> str:
     """
-    Call the SEC Q&A chat agent with the current query and chat history.
+    Call the document-level SEC Q&A chat agent with the current query.
 
-    `history` is treated purely as prior context; the current `message`
-    is passed via the dedicated `query` argument.
+    The underlying pipeline is single-turn; chat history is maintained only
+    in the Streamlit UI for conversational context.
     """
     try:
-        return answer_sec_query(query=message, messages=history)
+        return answer_sec_query_v3_docs(query=message)
     except Exception as e:
         return (
             "I encountered an error while processing your request: "
@@ -195,7 +197,9 @@ def render_chat_ui() -> None:
         st.session_state.messages.append({"role": "user", "content": prompt})
 
         # Loader animation while the agent is working.
-        with st.spinner("Retrieving sec.gov documents and generating a structured answer..."):
+        with st.spinner(
+            "Running SEC document pipeline and generating an evidence-backed answer..."
+        ):
             reply = perform_chat(prompt, history_for_agent)
 
         # Append assistant response.
@@ -203,10 +207,80 @@ def render_chat_ui() -> None:
         st.rerun()
 
 
+def _render_report_section(title: str, relative_dir: str) -> None:
+    base_dir = Path(__file__).resolve().parent
+    section_dir = base_dir / relative_dir
+
+    st.subheader(title)
+
+    if not section_dir.exists() or not section_dir.is_dir():
+        st.info("No reports are available in this section yet.")
+        return
+
+    files = sorted(
+        p
+        for p in section_dir.iterdir()
+        if p.is_file() and p.suffix.lower() in {".md", ".txt"}
+    )
+
+    if not files:
+        st.info("No reports are available in this section yet.")
+        return
+
+    for file_path in files:
+        label = file_path.stem.replace("_", " ").replace("-", " ")
+        pretty_label = label.strip() or file_path.name
+
+        try:
+            text = file_path.read_text(encoding="utf-8")
+        except Exception:
+            continue
+
+        mime = "text/markdown" if file_path.suffix.lower() == ".md" else "text/plain"
+
+        st.download_button(
+            label=pretty_label,
+            data=text,
+            file_name=file_path.name,
+            mime=mime,
+            key=f"download-{file_path.relative_to(base_dir)}",
+        )
+
+
+def render_reports_tab() -> None:
+    st.markdown(
+        "Use the buttons below to download generated newsletters and round-table reports."
+    )
+    st.markdown("---")
+
+    _render_report_section("Newsletters", "reports/newsletter")
+    _render_report_section("Round-table reports", "reports/round_table")
+    _render_report_section(
+        "Cross-round-table / overall reports", "reports/overall_round_table"
+    )
+
+
 def main() -> None:
     layout_page()
     init_chat_state()
-    render_chat_ui()
+    chat_tab, reports_tab = st.tabs(["Chat", "Reports"])
+
+    with chat_tab:
+        render_chat_ui()
+
+    with reports_tab:
+        render_reports_tab()
+
+    st.markdown("---")
+    st.markdown(
+        """
+        <div style="text-align:center; color:#9ca3af; font-size:0.8rem; margin-top:0.75rem;">
+            This interface is a beta prototype for SEC-related research and content exploration.
+            A production-ready version with regular and weekly content updates and an expanded feature set is planned.
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 if __name__ == "__main__":
