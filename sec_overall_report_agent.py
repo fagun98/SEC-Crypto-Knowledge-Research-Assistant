@@ -72,12 +72,18 @@ def find_all_meeting_reports(directory: str = ".") -> str:
         List of all found meeting report file paths.
     """
     try:
+        # Resolve directory relative to this file so it works regardless of CWD
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        search_dir = os.path.join(base_dir, directory)
+
         # Search for SEC meeting report files
-        pattern = os.path.join(directory, "SEC_Meeting_Report_*.txt")
+        pattern = os.path.join(search_dir, "SEC_Meeting_Report_*.txt")
         report_files = glob.glob(pattern)
         
+        print(f"Found {len(report_files)} meeting report file(s) in {search_dir}")
+        
         if not report_files:
-            return f"No meeting report files found in {directory}. Pattern used: SEC_Meeting_Report_*.txt"
+            return f"No meeting report files found in {search_dir}. Pattern used: SEC_Meeting_Report_*.txt"
         
         # Sort by modification time (newest first)
         report_files.sort(key=os.path.getmtime, reverse=True)
@@ -485,12 +491,16 @@ def generate_overall_report(
     Returns:
         Path to the generated overall report file
     """
+    # Resolve report_directory relative to this file so it works regardless of CWD
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    input_dir = os.path.join(base_dir, report_directory)
+
     # Find all meeting reports
-    pattern = os.path.join(report_directory, "SEC_Meeting_Report_*.txt")
+    pattern = os.path.join(input_dir, "SEC_Meeting_Report_*.txt")
     report_files = glob.glob(pattern)
     
     if not report_files:
-        raise ValueError(f"No meeting report files found in {report_directory}. Pattern: SEC_Meeting_Report_*.txt")
+        raise ValueError(f"No meeting report files found in {input_dir}. Pattern: SEC_Meeting_Report_*.txt")
     
     # Sort by modification time (newest first)
     report_files.sort(key=os.path.getmtime, reverse=True)

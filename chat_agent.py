@@ -1147,15 +1147,22 @@ if __name__ == "__main__":
         # Regression-style test: run doc pipeline on questions that previously
         # elicited meta disclaimers (e.g., "Not from the SEC.gov materials you provided").
         problem_queries = [
-            "Can the system map which crypto-asset categories (stablecoins, DeFi tokens, NFTs) are most frequently cited in SEC enforcement actions or policy statements?",
+            # "Can the system map which crypto-asset categories (stablecoins, DeFi tokens, NFTs) are most frequently cited in SEC enforcement actions or policy statements?",
+            # "How does the SEC’s current regulatory framework compare with the EU’s MiCA regime in terms of market authorization, investor protection, and stablecoin oversight?",
+            # "Can the system generate a comparative matrix of SEC regulations versus the UK’s phased crypto regime and highlight convergence or divergence areas?",
+            # "What regulatory approaches in MiCA or FATF guidance could be recommended to close gaps in the SEC’s current approach to DeFi oversight?",
+            # "Using historical SEC task force data, what precedents exist for shifting from enforcement-first to policy-led approaches?",
+            # "How might rulemaking scenarios (e.g., classifying stablecoins as securities vs. payment instruments) impact institutional adoption, based on global precedent analysis?",
+            # "What are the recurring themes and concerns in Task Force Written Inputs and Roundtable Transcripts, particularly from industry vs. academic participants?",
+            # " I really want to have a high level idea of what you have in your knowledge base to tee up my questions. Can you tell me?",
+            # "For the topic of custody for Investment Advisors, I would like to know what you can provide at different levels: quick summary, annotated bibliography of documents; timeline of rule changes/enforcement actions/no actions; or legal regulatory mapping. Can you help?",
+            "How has the SEC’s interpretation of the Howey Test evolved across enforcement cases related to crypto tokens, and what classification patterns can the knowledge base identify?",
             "How does the SEC’s current regulatory framework compare with the EU’s MiCA regime in terms of market authorization, investor protection, and stablecoin oversight?",
-            "Can the system generate a comparative matrix of SEC regulations versus the UK’s phased crypto regime and highlight convergence or divergence areas?",
-            "What regulatory approaches in MiCA or FATF guidance could be recommended to close gaps in the SEC’s current approach to DeFi oversight?",
             "Using historical SEC task force data, what precedents exist for shifting from enforcement-first to policy-led approaches?",
-            "How might rulemaking scenarios (e.g., classifying stablecoins as securities vs. payment instruments) impact institutional adoption, based on global precedent analysis?",
-            "What are the recurring themes and concerns in Task Force Written Inputs and Roundtable Transcripts, particularly from industry vs. academic participants?",
+            "What are the recurring themes and concerns in Crypto Task Force Written Inputs and Roundtable Transcripts, particularly from industry vs. academic participants?"
         ]
 
+        results = {}
         for idx, q in enumerate(problem_queries, start=1):
             print(f"\n[v3] Test 4, question {idx}: {q}")
             exp = run_sec_query_experiment_v3_docs(
@@ -1164,4 +1171,9 @@ if __name__ == "__main__":
             answer = exp.get("final_answer", "")
             print("\nAnswer:\n")
             print(answer or "_No answer generated._")
+            results[q] = answer
+        
+        with open("problem_queries_results.json", "w", encoding="utf-8") as f:
+            json.dump(results, f)
+
 

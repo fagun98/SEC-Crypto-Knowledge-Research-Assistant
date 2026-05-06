@@ -630,8 +630,8 @@ if __name__ == "__main__":
     print("=" * 80)
     
     # Test with provided URL and transcript
-    test_url = "https://www.sec.gov/newsroom/meetings-events/defi-american-spirit"
-    test_transcript = "june_9_2025.txt"
+    test_url = "https://www.sec.gov/newsroom/meetings-events/crypto-task-force-roundtable-financial-surveillance-privacy"
+    test_transcript = "dec_15_2025.txt"
     
     print(f"\nGenerating report for meeting: {test_url}")
     print(f"Transcript file: {test_transcript}")

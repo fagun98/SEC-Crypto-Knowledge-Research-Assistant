@@ -559,8 +559,8 @@ def generate_crypto_custody_report_v4(
 if __name__ == "__main__":
     month = 2
     year = 2026
-    start_date = "2026-02-09"
-    end_date = "2026-02-15"
+    start_date = "2026-02-23"
+    end_date = "2026-03-01"
 
     sec_urls = [
         "https://www.sec.gov/featured-topics/crypto-task-force",
@@ -585,6 +585,6 @@ if __name__ == "__main__":
         use_rag=False,
         delay_seconds=1.5,
     )
-    output_path = "reports/newsletter/Feb_9_2026-Feb_15_2026.md"
+    output_path = "reports/newsletter/Feb_23_2026-Mar_01_2026.md"
     write_newsletter_sync(report, output_path)
     print(f"\nNewsletter ready: {output_path}\n")
