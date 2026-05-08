@@ -27,6 +27,13 @@ client = OpenAI()
 pc = Pinecone(api_key=os.environ["PINECONE_API_KEY"])
 sparse_encoder = SpladeEncoder()
 
+# Optional: classify chunks with CRI ontology during ingestion.
+CRI_CLASSIFY_ON_INGEST = os.getenv("CRI_CLASSIFY_ON_INGEST", "").strip() in {"1", "true", "True", "yes", "YES"}
+if CRI_CLASSIFY_ON_INGEST:
+    from cri_ontology.classifier import classify_chunk
+    from cri_ontology.document_context import infer_source_type_from_url
+    from cri_ontology.validate import validate_classification
+
 
 def _get_headers() -> Dict[str, str]:
     """Common request headers for SEC.gov (reuse from new_crawler_tool)."""
@@ -309,6 +316,52 @@ def upsert_chunks(chunks: List[DocumentChunk], batch_size: int = 100) -> None:
         sparse_embeddings = encode_sparse(texts)
 
         for c, dense_emb, sparse_emb in zip(batch, dense_embeddings, sparse_embeddings):
+            meta: Dict[str, object] = {
+                "source_url": c.source_url or "N/A",
+                "title": c.title or "N/A",
+                "page": c.page or "N/A",
+                "type": c.doc_type or "N/A",
+                "document_text": c.text or "N/A",
+            }
+
+            if CRI_CLASSIFY_ON_INGEST:
+                # Best-effort document context from what we have at ingest time.
+                doc_ctx = {
+                    "document_title": meta.get("title", ""),
+                    "source_url": meta.get("source_url", ""),
+                    "source_type": infer_source_type_from_url(
+                        str(meta.get("source_url", "")), doc_type=str(meta.get("type", ""))
+                    ),
+                    "regulatory_body": ["SEC"]
+                    if "sec.gov" in str(meta.get("source_url", "")).lower()
+                    else [],
+                }
+                try:
+                    classified = classify_chunk(
+                        chunk_text=str(meta.get("document_text", "")),
+                        document_context=doc_ctx,
+                        client=client,
+                    )
+                    normalized, errors = validate_classification(classified)
+                    meta.update(
+                        {
+                            "domain_primary": normalized["domain_primary"],
+                            "domain_secondary": normalized["domain_secondary"],
+                            "subdomain": normalized["subdomain"],
+                            "lifecycle_stage": normalized["lifecycle_stage"],
+                            "durability_tier": normalized["durability_tier"],
+                            "classification_confidence": normalized["confidence"],
+                            "classification_reason": normalized.get("reasoning_summary", ""),
+                            "validation_status": normalized["validation_status"],
+                        }
+                    )
+                    if errors:
+                        meta["classification_validation_errors"] = errors[:50]
+                except Exception as e:
+                    # Never fail ingestion on classification errors.
+                    meta["validation_status"] = "pending_review"
+                    meta["classification_error"] = str(e)[:500]
+
             vectors.append(
                 {
                     "id": c.id,
@@ -317,13 +370,7 @@ def upsert_chunks(chunks: List[DocumentChunk], batch_size: int = 100) -> None:
                         "indices": sparse_emb["indices"],
                         "values": sparse_emb["values"],
                     },
-                    "metadata": {
-                        "source_url": c.source_url or "N/A",
-                        "title": c.title or "N/A",
-                        "page": c.page or "N/A",
-                        "type": c.doc_type or "N/A",
-                        "document_text": c.text or "N/A",
-                    },
+                    "metadata": meta,
                 }
             )
         index.upsert(vectors=vectors, namespace=PINECONE_NAMESPACE)
