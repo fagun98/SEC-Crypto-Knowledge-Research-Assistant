@@ -312,6 +312,14 @@ def classify_endpoint_to_metadata(
             publication_date = extract_publication_date_from_html(html) or ""
             capped_text = _cap_text(full_text, max_chars=max_html_chars)
 
+        print("="*50)
+        print("\n\n")
+        print(f"{title}")
+        print(f"{capped_text}")
+        print("\n\n")
+        
+        return 
+        
         out["title"] = title
         out["publication_date"] = publication_date
         out["source_type"] = infer_source_type_from_url(final_url, doc_type=doc_type)
