@@ -6,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 from pypdf import PdfReader
 
-from typing import List, Dict, Tuple
+from typing import Dict, Iterable, List, Tuple
 
 # SEC domain we allow (no crawling outside this)
 SEC_NETLOC = "www.sec.gov"
@@ -112,6 +112,69 @@ def _extract_sec_links(soup: BeautifulSoup, page_url: str) -> List[str]:
     return out
 
 
+DEFAULT_SEED_URLS: List[str] = [
+    "https://www.sec.gov/featured-topics/crypto-task-force",
+    "https://www.sec.gov/about/divisions-offices/division-trading-markets",
+    "https://www.sec.gov/about/divisions-offices/division-investment-management",
+    "https://www.sec.gov/newsroom/speeches-statements",
+    "https://www.sec.gov/enforcement-litigation/litigation-releases",
+    "https://www.sec.gov/rules-regulations/rulemaking-activity",
+]
+
+
+def iter_crawl_sec_pages(
+    seed_urls: List[str],
+    max_depth: int = 2,
+    max_pages: int = 50,
+    delay_seconds: float = DEFAULT_CRAWL_DELAY,
+) -> Iterable[Dict[str, object]]:
+    """
+    Stream SEC.gov BFS crawl. Yields {"source_url": url, "depth": int} per visit.
+
+  Fetches HTML only to discover links; ingestion should fetch content via
+    cri_ontology.document_context.fetch_sec_document.
+    max_pages=0 means no page limit.
+    """
+    seen: set = set()
+    queue: List[Tuple[str, int]] = []
+    visited = 0
+
+    for u in seed_urls:
+        u = u.strip()
+        if u.startswith("https://www.sec.gov"):
+            queue.append((_normalize_url(u), 0))
+
+    while queue and (max_pages <= 0 or visited < max_pages):
+        url, depth = queue.pop(0)
+        if url in seen:
+            continue
+        seen.add(url)
+
+        yield {"source_url": url, "depth": depth}
+        visited += 1
+        print(url)
+
+        if _is_pdf_url(url):
+            time.sleep(delay_seconds)
+            continue
+
+        try:
+            soup = _get_soup(url)
+        except Exception as e:
+            print(f"Failed to fetch {url}: {e}")
+            time.sleep(delay_seconds)
+            continue
+
+        if depth < max_depth:
+            for link in _extract_sec_links(soup, url):
+                if link not in seen:
+                    queue.append((link, depth + 1))
+
+        time.sleep(delay_seconds)
+
+    print(f"\nVisited {visited} URL(s).")
+
+
 def crawl_sec_pages(
     seed_urls: List[str],
     max_depth: int = 2,
@@ -130,64 +193,26 @@ def crawl_sec_pages(
 
     Example: crawl_sec_pages(["https://www.sec.gov/newsroom/speeches-statements"], max_depth=2, max_pages=40)
     """
-    seen: set = set()
     results: List[Dict[str, str]] = []
-    # Queue: (url, depth)
-    queue: List[Tuple[str, int]] = []
-    for u in seed_urls:
-        u = u.strip()
-        if u.startswith("https://www.sec.gov"):
-            queue.append((_normalize_url(u), 0))
-
-    while queue and len(results) < max_pages:
-        url, depth = queue.pop(0)
-        if url in seen:
-            continue
-        seen.add(url)
-
-        if _is_pdf_url(url):
-            try:
+    for item in iter_crawl_sec_pages(
+        seed_urls,
+        max_depth=max_depth,
+        max_pages=max_pages,
+        delay_seconds=delay_seconds,
+    ):
+        url = str(item["source_url"])
+        try:
+            if _is_pdf_url(url):
                 content = _fetch_pdf_text(url)
-            except Exception as e:
-                print(f"Failed to fetch PDF {url}: {e}")
-                continue
+            else:
+                content = fetch_sec_url(url)
             results.append({"source_url": url, "content": content})
-            print(url)
-            # PDFs: no link extraction
-        else:
-            try:
-                soup = _get_soup(url)
-            except Exception as e:
-                print(f"Failed to fetch {url}: {e}")
-                continue
-            for tag in soup(["script", "style", "noscript"]):
-                tag.decompose()
-            text = soup.get_text(separator=" ")
-            content = " ".join(text.split())
-            results.append({"source_url": url, "content": content})
-            print(url)
-
-            if depth < max_depth:
-                for link in _extract_sec_links(soup, url):
-                    if link not in seen:
-                        queue.append((link, depth + 1))
-
-        time.sleep(delay_seconds)
-
-    print(f"\nVisited {len(results)} URL(s).")
+        except Exception as e:
+            print(f"Failed to fetch content for {url}: {e}")
     return results
 
 
 # Example run to test fetch_sec_url function
 if __name__ == "__main__":
-    seed_urls = [
-        "https://www.sec.gov/featured-topics/crypto-task-force",
-        "https://www.sec.gov/about/divisions-offices/division-trading-markets",
-        "https://www.sec.gov/about/divisions-offices/division-investment-management",
-        "https://www.sec.gov/newsroom/speeches-statements",
-        "https://www.sec.gov/enforcement-litigation/litigation-releases",
-        "https://www.sec.gov/rules-regulations/rulemaking-activity",
-    ]
-
-    results = crawl_sec_pages(seed_urls)
+    results = crawl_sec_pages(DEFAULT_SEED_URLS)
     print(results)

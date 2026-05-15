@@ -126,6 +126,17 @@ def _extract_title_and_text_from_html(url: str, html: str) -> Tuple[str, str]:
 
 
 def _extract_text_from_pdf_bytes(content: bytes, *, max_pages: int = 3) -> Tuple[str, str]:
+    pages = _extract_pdf_pages_from_bytes(content, max_pages=max_pages)
+    if not pages:
+        return "PDF Document", ""
+    title = "PDF Document"
+    return title, "\n".join(text for _, text in pages)
+
+
+def _extract_pdf_pages_from_bytes(
+    content: bytes, *, max_pages: int = 3
+) -> List[Tuple[int, str]]:
+    """Return list of (page_number, text). max_pages=0 means all pages."""
     from io import BytesIO
 
     try:
@@ -134,16 +145,16 @@ def _extract_text_from_pdf_bytes(content: bytes, *, max_pages: int = 3) -> Tuple
         raise RuntimeError("Missing dependency: pypdf is required to parse PDF endpoints.") from e
 
     reader = PdfReader(BytesIO(content))
-    n = min(len(reader.pages), max_pages if max_pages > 0 else len(reader.pages))
-    parts: List[str] = []
+    n_pages = len(reader.pages)
+    n = min(n_pages, max_pages if max_pages > 0 else n_pages)
+    out: List[Tuple[int, str]] = []
     for i in range(n):
         page = reader.pages[i]
         txt = page.extract_text() or ""
         txt = " ".join(txt.split())
         if txt:
-            parts.append(txt)
-    title = "PDF Document"
-    return title, "\n".join(parts)
+            out.append((i + 1, txt))
+    return out
 
 
 def _cap_text(text: str, *, max_chars: int) -> str:
@@ -255,6 +266,93 @@ def build_document_context_from_metadata(meta: Dict[str, Any]) -> Dict[str, Any]
     return out
 
 
+def fetch_sec_document(
+    url: str,
+    *,
+    max_html_chars: Optional[int] = None,
+    max_pdf_pages: int = 0,
+    timeout_seconds: int = 20,
+    regulatory_body_default: Optional[List[str]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Fetch an SEC HTML or PDF endpoint and return one dict per logical page.
+
+    Each dict includes: final_url, doc_type, title, full_text, page (int or None),
+    publication_date, source_type, document_context.
+
+    max_pdf_pages=0 extracts all PDF pages. max_html_chars=None keeps full HTML text.
+    """
+    doc_type, raw_bytes, final_url = _fetch_endpoint(url, timeout=timeout_seconds)
+    reg_body = regulatory_body_default or (
+        ["SEC"] if "sec.gov" in (final_url or "").lower() else []
+    )
+    source_type = infer_source_type_from_url(final_url, doc_type=doc_type)
+    pages_out: List[Dict[str, Any]] = []
+
+    if doc_type == "pdf":
+        for page_num, text in _extract_pdf_pages_from_bytes(
+            raw_bytes, max_pages=max_pdf_pages
+        ):
+            full_text = text.strip()
+            if max_html_chars is not None and max_html_chars > 0:
+                full_text = _cap_text(full_text, max_chars=max_html_chars)
+            if not full_text:
+                continue
+            title = f"PDF Document (page {page_num})"
+            document_context: Dict[str, Any] = {
+                "document_title": title,
+                "source_url": final_url,
+                "publication_date": "",
+                "source_type": source_type,
+                "regulatory_body": reg_body,
+                "source_doc_type": doc_type,
+                "page": page_num,
+            }
+            pages_out.append(
+                {
+                    "final_url": final_url,
+                    "doc_type": doc_type,
+                    "title": title,
+                    "full_text": full_text,
+                    "page": page_num,
+                    "publication_date": "",
+                    "source_type": source_type,
+                    "document_context": document_context,
+                }
+            )
+    else:
+        html = raw_bytes.decode("utf-8", errors="replace")
+        title, full_text = _extract_title_and_text_from_html(final_url, html)
+        publication_date = extract_publication_date_from_html(html) or ""
+        if max_html_chars is not None and max_html_chars > 0:
+            full_text = _cap_text(full_text, max_chars=max_html_chars)
+        full_text = full_text.strip()
+        if not full_text:
+            return pages_out
+        document_context = {
+            "document_title": title,
+            "source_url": final_url,
+            "publication_date": publication_date,
+            "source_type": source_type,
+            "regulatory_body": reg_body,
+            "source_doc_type": doc_type,
+        }
+        pages_out.append(
+            {
+                "final_url": final_url,
+                "doc_type": doc_type,
+                "title": title,
+                "full_text": full_text,
+                "page": None,
+                "publication_date": publication_date,
+                "source_type": source_type,
+                "document_context": document_context,
+            }
+        )
+
+    return pages_out
+
+
 def classify_endpoint_to_metadata(
     url: str,
     *,
@@ -311,14 +409,6 @@ def classify_endpoint_to_metadata(
             title, full_text = _extract_title_and_text_from_html(final_url, html)
             publication_date = extract_publication_date_from_html(html) or ""
             capped_text = _cap_text(full_text, max_chars=max_html_chars)
-
-        print("="*50)
-        print("\n\n")
-        print(f"{title}")
-        print(f"{capped_text}")
-        print("\n\n")
-        
-        return 
         
         out["title"] = title
         out["publication_date"] = publication_date
