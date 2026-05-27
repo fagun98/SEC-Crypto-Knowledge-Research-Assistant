@@ -125,6 +125,39 @@ def _extract_title_and_text_from_html(url: str, html: str) -> Tuple[str, str]:
     return title, text
 
 
+def extract_title_and_text_from_html(url: str, html: str) -> Tuple[str, str]:
+    """Public wrapper for HTML title/body extraction used by scrapers."""
+    return _extract_title_and_text_from_html(url, html)
+
+
+def fetch_html_text(url: str, *, timeout: int = 20) -> Tuple[str, str]:
+    """
+    Fetch an SEC HTML endpoint and return (html_text, final_url).
+    Raises if the endpoint is not HTML.
+    """
+    doc_type, raw_bytes, final_url = _fetch_endpoint(url, timeout=timeout)
+    if doc_type != "html":
+        raise ValueError(f"Expected HTML at {url}, got {doc_type}")
+    return raw_bytes.decode("utf-8", errors="replace"), final_url
+
+
+def extract_title_and_text_from_url(
+    url: str, *, timeout: int = 20, max_pdf_pages: int = 0
+) -> Tuple[str, str]:
+    """
+    Fetch an SEC HTML or PDF URL and return (title, full_text).
+    max_pdf_pages=0 extracts all PDF pages.
+    """
+    doc_type, raw_bytes, final_url = _fetch_endpoint(url, timeout=timeout)
+    if doc_type == "pdf":
+        pages = _extract_pdf_pages_from_bytes(raw_bytes, max_pages=max_pdf_pages)
+        if not pages:
+            return "PDF Document", ""
+        return "PDF Document", "\n".join(text for _, text in pages)
+    html = raw_bytes.decode("utf-8", errors="replace")
+    return extract_title_and_text_from_html(final_url, html)
+
+
 def _extract_text_from_pdf_bytes(content: bytes, *, max_pages: int = 3) -> Tuple[str, str]:
     pages = _extract_pdf_pages_from_bytes(content, max_pages=max_pages)
     if not pages:
