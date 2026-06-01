@@ -1,6 +1,43 @@
 {
   "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "scraperChoice",
+      "type": "pickString",
+      "description": "Run one scraper or all scrapers in parallel (each in its own terminal tab)",
+      "options": [
+        {
+          "label": "All scrapers (parallel, Jan–Jun 2026)",
+          "value": "Run All Scrapers (Jan–Jun 2026)"
+        },
+        { "label": "Newsroom", "value": "Newsroom Scraper" },
+        { "label": "Written Input", "value": "Written Input Scraper" },
+        {
+          "label": "Task Force Meetings",
+          "value": "Task Force Meetings Scraper"
+        },
+        { "label": "Crypto@SEC", "value": "Crypto@SEC Scraper" },
+        { "label": "What's New", "value": "What's New Scraper" },
+        { "label": "Press Releases", "value": "Press Releases Scraper" },
+        {
+          "label": "Speeches & Statements",
+          "value": "Speeches & Statements Scraper"
+        },
+        { "label": "Rulemaking", "value": "Rulemaking Scraper" },
+        {
+          "label": "No-Action Letters",
+          "value": "No-Action Letters Scraper"
+        }
+      ],
+      "default": "Run All Scrapers (Jan–Jun 2026)"
+    }
+  ],
   "tasks": [
+    {
+      "label": "SEC Scraper (choose)",
+      "dependsOn": "${input:scraperChoice}",
+      "problemMatcher": []
+    },
     {
       "label": "Newsroom Scraper",
       "type": "shell",
@@ -22,10 +59,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -50,10 +86,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -78,10 +113,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -106,10 +140,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -134,10 +167,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -162,10 +194,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -190,10 +221,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -218,10 +248,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -246,10 +275,9 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "new",
         "showReuseMessage": false,
-        "close": false,
-        "group": "secScrapers"
+        "close": false
       },
       "problemMatcher": []
     },
@@ -266,7 +294,8 @@
         "Rulemaking Scraper",
         "No-Action Letters Scraper"
       ],
-      "dependsOrder": "parallel"
+      "dependsOrder": "parallel",
+      "problemMatcher": []
     }
   ]
 }
