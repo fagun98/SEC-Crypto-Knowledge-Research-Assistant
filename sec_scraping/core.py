@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
@@ -79,6 +80,7 @@ _EXCLUDED_KEY_PARTS = frozenset(
 
 _FALLBACK_TITLE_FIELDS = (
     "title",
+    "headline",
     "written_input",
     "participants_associated_materials",
     "statement",
@@ -89,6 +91,15 @@ _FALLBACK_TITLE_FIELDS = (
 def _slug_column(name: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "_", (name or "").strip().lower())
     return slug.strip("_") or "column"
+
+
+def _normalize_table_header(name: str) -> str:
+    """Strip Drupal table sort labels so headers match expected names (e.g. Date)."""
+    s = (name or "").strip()
+    for suffix in (" Sort descending", " Sort ascending"):
+        if s.endswith(suffix):
+            return s[: -len(suffix)].strip()
+    return s
 
 
 def make_row_key(row: Dict[str, Any]) -> str:
@@ -183,7 +194,7 @@ def _parse_table_element(table: Any, expected: List[str]) -> List[Dict[str, Any]
 
 def _parse_tr_block(trs: List[Any], expected: List[str]) -> List[Dict[str, Any]]:
     header_cells = trs[0].find_all(["th", "td"])
-    headers = [c.get_text(" ", strip=True) for c in header_cells]
+    headers = [_normalize_table_header(c.get_text(" ", strip=True)) for c in header_cells]
     if not headers:
         return []
 
@@ -790,6 +801,232 @@ def merge_whats_new_rows(
         added += 1
 
     return df, added
+
+
+_LI_DATE_TRAILING_RE = re.compile(
+    r",\s*([A-Za-z]+\.?\s+\d{1,2},\s+\d{4})\s*$"
+)
+
+
+def _parse_li_date(li_text: str, title: str) -> str:
+    """Extract date string from list item text after the anchor title."""
+    text = (li_text or "").replace("\xa0", " ").strip()
+    title_clean = (title or "").strip()
+    if title_clean and text.startswith(title_clean):
+        remainder = text[len(title_clean) :].strip()
+    else:
+        remainder = text
+    remainder = remainder.lstrip(",").strip()
+    if remainder:
+        return remainder
+    match = _LI_DATE_TRAILING_RE.search(text)
+    if match:
+        return match.group(1).strip()
+    return ""
+
+
+def _no_action_list_item_id(li: Any, title_url: str) -> str:
+    """Prefer Drupal data-list-item-id; otherwise stable hash from detail URL."""
+    lid = (li.get("data-list-item-id") or "").strip()
+    if lid:
+        return lid
+    return hashlib.sha256(title_url.encode("utf-8")).hexdigest()
+
+
+def _is_skippable_href(href: str) -> bool:
+    h = (href or "").strip().lower()
+    return not h or h.startswith("#") or h.startswith("mailto:") or h.startswith("javascript:")
+
+
+def _apply_test_mode_slice(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Keep first 2 and last 2 parseable rows; dedupe by list_item_id if ranges overlap."""
+    if len(rows) <= 4:
+        return rows
+    by_id: Dict[str, Dict[str, Any]] = {}
+    for r in rows[:2] + rows[-2:]:
+        lid = str(r.get("list_item_id") or "")
+        if lid:
+            by_id[lid] = r
+    return list(by_id.values())
+
+
+def parse_no_action_list_items(
+    html: str,
+    *,
+    test_mode: bool = False,
+) -> List[Dict[str, Any]]:
+    """
+    Parse no-action letter list items from division index pages.
+
+    Each parseable <li> must have data-list-item-id and an <a> with a non-# href.
+    """
+    soup = BeautifulSoup(html or "", "html.parser")
+    root = soup.select_one("#main-content") or soup.select_one("div.content-wrapper")
+    if root is None:
+        root = soup
+
+    rows: List[Dict[str, Any]] = []
+    for li in root.find_all("li"):
+        anchor = li.find("a", href=True)
+        if anchor is None:
+            continue
+
+        href = (anchor.get("href") or "").strip()
+        if _is_skippable_href(href):
+            continue
+
+        title = anchor.get_text(" ", strip=True)
+        title_url = resolve_sec_url(href)
+        if not title or not title_url:
+            continue
+
+        list_item_id = _no_action_list_item_id(li, title_url)
+        li_text = li.get_text(" ", strip=True)
+        date_raw = _parse_li_date(li_text, title)
+        if not date_raw or not normalize_sec_date(date_raw):
+            continue
+
+        rows.append(
+            {
+                "list_item_id": list_item_id,
+                "title": title,
+                "date": date_raw,
+                "title_url": title_url,
+            }
+        )
+
+    if test_mode:
+        rows = _apply_test_mode_slice(rows)
+    return rows
+
+
+def merge_no_action_rows(
+    existing: pd.DataFrame,
+    new_rows: List[Dict[str, Any]],
+    *,
+    source_list_url: str,
+    division: str = "",
+    fetch_context: bool = True,
+) -> Tuple[pd.DataFrame, int]:
+    """
+    Append no-action rows whose list_item_id is not already present; enrich context.
+    Returns (updated_df, count_added).
+    """
+    df = ensure_dataframe_schema(existing)
+    for col in ("context_title", "context", "resources", "list_item_id", "division"):
+        if col not in df.columns:
+            df[col] = ""
+
+    if df is None or df.empty or "list_item_id" not in df.columns:
+        id_to_index: Dict[str, int] = {}
+    else:
+        id_to_index = {
+            str(v).strip(): int(idx)
+            for idx, v in df["list_item_id"].astype(str).items()
+            if str(v).strip() and str(v).strip().lower() != "nan"
+        }
+
+    added = 0
+    now = datetime.now(timezone.utc).isoformat()
+
+    for row in new_rows:
+        list_item_id = str(row.get("list_item_id") or "").strip()
+        if not list_item_id:
+            continue
+
+        record: Dict[str, Any] = dict(row)
+        date_val = record.get("date")
+        if date_val:
+            normalized = normalize_sec_date(str(date_val))
+            if normalized:
+                record["date_normalized"] = normalized
+
+        if list_item_id in id_to_index:
+            if fetch_context:
+                idx = id_to_index[list_item_id]
+                existing_row_dict = df.loc[idx].to_dict()
+                if _needs_detail_enrichment(existing_row_dict):
+                    detail_url = primary_detail_url(existing_row_dict)
+                    if detail_url:
+                        try:
+                            fallback = row_fallback_title(existing_row_dict)
+                            title, text, resources_json = enrich_whats_new_detail(
+                                detail_url,
+                                fallback_title=fallback,
+                                fetch_resources=fetch_context,
+                            )
+                            df.at[idx, "context_title"] = title
+                            df.at[idx, "context"] = text
+                            df.at[idx, "resources"] = resources_json
+                        except Exception:
+                            pass
+            continue
+
+        record["list_item_id"] = list_item_id
+        record["row_key"] = list_item_id
+        record["source_list_url"] = source_list_url
+        if division:
+            record["division"] = division
+        record["scraped_at"] = now
+        record["vectorized"] = False
+        record.setdefault("context_title", "")
+        record.setdefault("context", "")
+        record.setdefault("resources", "[]")
+
+        if fetch_context:
+            detail_url = primary_detail_url(record)
+            if detail_url:
+                try:
+                    fallback = row_fallback_title(record)
+                    title, text, resources_json = enrich_whats_new_detail(
+                        detail_url,
+                        fallback_title=fallback,
+                        fetch_resources=True,
+                    )
+                    record["context_title"] = title
+                    record["context"] = text
+                    record["resources"] = resources_json
+                except Exception:
+                    pass
+
+        df = pd.concat([df, pd.DataFrame([record])], ignore_index=True)
+        id_to_index[list_item_id] = len(df) - 1
+        added += 1
+
+    return df, added
+
+
+def run_no_action_list_scraper(
+    *,
+    divisions: List[Tuple[str, str]],
+    dataframe_path: str | Path,
+    fetch_context: bool = True,
+    test_mode: bool = False,
+) -> pd.DataFrame:
+    """Scrape no-action letter index pages; dedupe by list_item_id; persist after each division."""
+    df = ensure_dataframe_schema(load_dataframe(dataframe_path))
+    save_dataframe(df, dataframe_path)
+
+    for division_slug, list_url in divisions:
+        print(f"[no-action] division={division_slug} test_mode={test_mode} url={list_url}")
+        html = fetch_html(list_url)
+        rows = parse_no_action_list_items(html, test_mode=test_mode)
+        suffix = " (after test slice)" if test_mode else ""
+        print(f"[no-action] division={division_slug} parsed={len(rows)}{suffix}")
+        if not rows:
+            continue
+
+        df, added = merge_no_action_rows(
+            df,
+            rows,
+            source_list_url=list_url,
+            division=division_slug,
+            fetch_context=fetch_context,
+        )
+        print(f"[no-action] division={division_slug} added={added} total={len(df)}")
+        save_dataframe(df, dataframe_path)
+
+    return df
 
 
 def list_page_has_no_results(html: str) -> bool:

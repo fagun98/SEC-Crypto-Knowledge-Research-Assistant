@@ -243,6 +243,54 @@ UI Display
 - "I want to dive deep into how the SEC regulates Bitcoin ETFs. Can you help me research this comprehensively?"
 - "Explain the difference between security tokens and utility tokens according to SEC guidance"
 
+## SEC scraping dataframe ingest
+
+Scraped tables under `sec_scraping/dataframes/*.parquet` can be embedded into the same Pinecone index used by `crypto_ingest.py`, with CRI classification per segment (main or resource), then chunked with shared labels on each chunk.
+
+### Scheduled jobs (scrape + embed per page)
+
+Per-page CLIs under `sec_scraping/schedule_jobs/` support `--mode scrap|embed|test|pipeline`, month/year ranges (`--year`, `--from`/`--to`, `--period`), logging, and tqdm progress. See [sec_scraping/doc/schedule_jobs.md](sec_scraping/doc/schedule_jobs.md).
+
+```bash
+python -m sec_scraping.schedule_jobs.crypto_newsroom --mode pipeline
+python -m sec_scraping.schedule_jobs   # list all jobs
+```
+
+### Commands
+
+```bash
+# All tables, pending rows only (vectorized=False), batches of 10 rows
+python -m sec_scraping.ingest
+
+# Smoke test: one pending row per table
+python -m sec_scraping.ingest --test
+
+# Single dataset
+python -m sec_scraping.ingest --dataset crypto-newsroom
+
+# Chunk/count preview without API writes or parquet updates
+python -m sec_scraping.ingest --test --dry-run
+```
+
+### Behavior
+
+- Embeds `context` and each resource `context` from JSON `resources` columns; detail URLs become `source_url` in Pinecone metadata.
+- Sets `vectorized=True` on the source parquet row after a successful upsert.
+- Writes classification backups to `sec_scraping/dataframes/embed_<table>.parquet` (vector `id`, CRI fields, `status`/`reason`); rows with `Failure` are not retried until removed from the embed backup.
+- Prints a per-table summary and a rollup when processing all tables.
+
+### Environment variables
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `PINECONE_API_KEY` | (required) | Pinecone API key |
+| `PINECONE_INDEX_NAME` | `sec-cryto-knowledge-base-rag` | Index name |
+| `PINECONE_NAMESPACE` | `sec-knowledge-base` | Namespace |
+| `SEC_CHUNK_MAX_TOKENS` | `500` | Chunk size |
+| `SEC_CHUNK_OVERLAP_TOKENS` | `100` | Chunk overlap |
+| `SEC_INGEST_ROW_BATCH_SIZE` | `10` | Rows per batch before saving parquet |
+| `SEC_INGEST_VECTOR_BATCH_SIZE` | `32` | Vectors per Pinecone upsert call |
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

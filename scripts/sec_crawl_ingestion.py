@@ -43,17 +43,17 @@ def sanitize_metadata_for_pinecone(meta: Dict[str, Any]) -> Dict[str, Any]:
     return out
 
 
-def classify_chunk_metadata(
-    chunk_text_value: str,
+def classify_document_metadata(
+    document_text: str,
     document_context: Dict[str, Any],
     *,
     client: Optional[OpenAI] = None,
 ) -> Dict[str, Any]:
-    """Classify a chunk and return Pinecone-ready metadata fields."""
+    """Classify full document/segment text and return Pinecone-ready metadata fields."""
     meta: Dict[str, Any] = {}
     try:
         classified = classify_chunk(
-            chunk_text=chunk_text_value,
+            chunk_text=document_text,
             document_context=document_context,
             client=client,
         )
@@ -76,6 +76,18 @@ def classify_chunk_metadata(
         meta["validation_status"] = "pending_review"
         meta["classification_error"] = str(e)[:500]
     return meta
+
+
+def classify_chunk_metadata(
+    chunk_text_value: str,
+    document_context: Dict[str, Any],
+    *,
+    client: Optional[OpenAI] = None,
+) -> Dict[str, Any]:
+    """Classify a chunk and return Pinecone-ready metadata fields."""
+    return classify_document_metadata(
+        chunk_text_value, document_context, client=client
+    )
 
 
 def page_extracts_to_chunks(
