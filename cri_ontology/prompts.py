@@ -213,3 +213,100 @@ def build_classifier_prompt(*, chunk_text: str, document_context: Optional[Dict[
     </cri_classifier_request>
     """
 
+
+def _ontology_allowed_values_xml() -> tuple[str, str, str, str]:
+    """Build domains, subdomains, lifecycle, and tiers XML blocks."""
+    ordered_domains = [
+        d for d in ("AC", "RO", "MS", "CU", "SC", "DP", "CB", "EL", "SP", "IP") if d in DOMAIN_CODES
+    ]
+    ordered_lifecycle = ["PRE", "PROP", "INTPR", "FINAL", "ENFORCED", "SUPER"]
+    ordered_tiers = ["T1", "T2", "T3", "T4", "T5"]
+
+    domains_xml = "\n".join(
+        f'      <domain code="{d}">{DOMAIN_LABELS.get(d, d)}</domain>' for d in ordered_domains
+    )
+
+    subdomains_xml_parts = []
+    for dom in ordered_domains:
+        sds = sorted(SUBDOMAINS_BY_DOMAIN.get(dom, frozenset()))
+        if not sds:
+            continue
+        subdomains_xml_parts.append(f'      <domain code="{dom}">')
+        for sd in sds:
+            subdomains_xml_parts.append(
+                f'        <subdomain code="{sd}">{SUBDOMAIN_LABELS.get(sd, sd)}</subdomain>'
+            )
+        subdomains_xml_parts.append("      </domain>")
+    subdomains_xml = "\n".join(subdomains_xml_parts)
+
+    lifecycle_xml = "\n".join(
+        f'      <stage code="{s}">{LIFECYCLE_LABELS.get(s, s)}</stage>' for s in ordered_lifecycle
+    )
+    tiers_xml = "\n".join(
+        f'      <tier code="{t}">{DURABILITY_LABELS.get(t, t)}</tier>' for t in ordered_tiers
+    )
+    return domains_xml, subdomains_xml, lifecycle_xml, tiers_xml
+
+
+def build_query_classifier_prompt(*, query: str) -> str:
+    """
+    Build the CRI ontology classifier prompt for a user research question.
+    """
+    domains_xml, subdomains_xml, lifecycle_xml, tiers_xml = _ontology_allowed_values_xml()
+
+    output_schema = {
+        "domain_primary": "",
+        "domain_secondary": [],
+        "subdomain": [],
+        "lifecycle_stage": "",
+        "durability_tier": "",
+        "confidence": {
+            "domain_primary": 0.0,
+            "subdomain": 0.0,
+            "lifecycle_stage": 0.0,
+            "durability_tier": 0.0,
+        },
+        "reasoning_summary": "",
+    }
+    output_schema_str = json.dumps(output_schema, ensure_ascii=False, sort_keys=False, indent=2)
+
+    return f"""
+    <cri_query_classifier_request>
+      <role>You are a regulatory ontology classifier for Crypto Regulatory Insight (CRI).</role>
+      <task>Classify a user research question (not a document) according to the CRI Regulatory Ontology so retrieval can filter the knowledge base.</task>
+
+      <allowed_values>
+        <domains>
+          {domains_xml}
+        </domains>
+
+        <subdomains>
+          {subdomains_xml}
+        </subdomains>
+
+        <lifecycle_stages>
+          {lifecycle_xml}
+        </lifecycle_stages>
+
+        <durability_tiers>
+          {tiers_xml}
+        </durability_tiers>
+      </allowed_values>
+
+      <rules>
+        <rule>domain_primary must be exactly one domain code that best matches what the user is asking about.</rule>
+        <rule>domain_secondary must be a JSON array of zero or more additional relevant domain codes.</rule>
+        <rule>subdomain must be a JSON array of one or more valid subdomain codes the question most likely concerns.</rule>
+        <rule>lifecycle_stage reflects the regulatory maturity the user likely cares about (e.g. current guidance vs proposed rules).</rule>
+        <rule>durability_tier reflects the authority level the user likely needs (statute vs staff guidance).</rule>
+        <rule>Do not invent new labels or keys. Use only the allowed codes.</rule>
+        <rule>If the question spans multiple topics, pick the best primary domain and add secondaries/subdomains.</rule>
+        <rule>Output must be a single JSON object only (no markdown, no backticks, no extra text).</rule>
+      </rules>
+
+      <user_query>{_to_cdata(query.strip())}</user_query>
+
+      <output_schema_json>{_to_cdata(output_schema_str)}</output_schema_json>
+    </cri_query_classifier_request>
+    """
+

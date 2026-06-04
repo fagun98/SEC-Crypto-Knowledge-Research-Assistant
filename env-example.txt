@@ -1,7 +1,24 @@
 OPENAI_API_KEY = 
 OPENAI_EMBEDDING_MODEL = 
-OPENAI_LLM_MODEL = 
+OPENAI_LLM_MODEL = gpt-5.4-mini
 OPENAI_TEMPERATURE = 
+
+# Chat RAG agent — model roles (see chat_agent/MODELS.md)
+CHAT_BRAIN_MODEL = gpt-5.4-mini
+CHAT_NANO_MODEL = gpt-5.4-nano
+CHAT_RETRIEVAL_TOP_K = 10
+CHAT_RERANK_TOP_K = 8
+CHAT_HYBRID_ALPHA = 0.5
+CHAT_SCORE_THRESHOLD = 0.0
+CHAT_LLM_TEMPERATURE = 0.2
+CHAT_RERANK_MODEL = gpt-5.4-nano
+# Log full OPENAI_API_KEY to logs when 1 (default logs masked prefix/suffix only)
+CHAT_DEBUG_LOG_OPENAI_KEY = 
+
+# CRI ontology classifiers (nano for query + ingest chunks)
+CRI_QUERY_CLASSIFIER_MODEL = gpt-5.4-nano
+CRI_CLASSIFIER_MODEL = gpt-5.4-nano
+CRI_CLASSIFIER_MAX_OUTPUT_TOKENS = 1200
 
 PINECONE_API_KEY = 
 PINECONE_INDEX = 

@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, Tuple
 
 from openai import OpenAI
 
-from cri_ontology.prompts import build_classifier_prompt
+from cri_ontology.prompts import build_classifier_prompt, build_query_classifier_prompt
 from cri_ontology.validate import validate_classification
 
 from dotenv import load_dotenv
@@ -261,7 +261,7 @@ def classify_chunk(
     if not isinstance(chunk_text, str) or not chunk_text.strip():
         raise ValueError("chunk_text must be a non-empty string.")
 
-    model = os.getenv("CRI_CLASSIFIER_MODEL", "gpt-5-mini")
+    model = os.getenv("CRI_CLASSIFIER_MODEL", "gpt-5.4-nano")
     max_output_tokens = _get_env_int("CRI_CLASSIFIER_MAX_OUTPUT_TOKENS", 1200)
 
     prompt = build_classifier_prompt(
@@ -277,7 +277,10 @@ def classify_chunk(
         track_usage_cost=track_usage_cost,
     )
 
-    # Normalize minimal shape defensively; strict validation occurs later.
+    return _normalize_classifier_output(data, debug)
+
+
+def _normalize_classifier_output(data: Dict[str, Any], debug: Dict[str, Any]) -> Dict[str, Any]:
     out: Dict[str, Any] = {
         "domain_primary": data.get("domain_primary", ""),
         "domain_secondary": data.get("domain_secondary") or [],
@@ -288,7 +291,6 @@ def classify_chunk(
         "reasoning_summary": data.get("reasoning_summary") or "",
         "_debug": debug,
     }
-
     conf = out["confidence"]
     if isinstance(conf, dict):
         out["confidence"] = {
@@ -304,7 +306,50 @@ def classify_chunk(
             "lifecycle_stage": 0.0,
             "durability_tier": 0.0,
         }
+    return out
 
+
+def classify_query(
+    query: str,
+    *,
+    client: Optional[OpenAI] = None,
+    track_usage_cost: bool = False,
+) -> Dict[str, Any]:
+    """
+    Classify a user research question under the CRI Regulatory Ontology.
+
+    Returns raw classifier fields plus ``normalized`` and ``validation_errors``
+    from ``validate_classification``.
+    """
+    if not isinstance(query, str) or not query.strip():
+        raise ValueError("query must be a non-empty string.")
+
+    try:
+        from chat_agent.models import get_query_classifier_model
+
+        model = get_query_classifier_model()
+    except ImportError:
+        model = (
+            os.getenv("CRI_QUERY_CLASSIFIER_MODEL")
+            or os.getenv("CHAT_NANO_MODEL")
+            or os.getenv("CRI_CLASSIFIER_MODEL", "gpt-5.4-nano")
+        )
+    max_output_tokens = _get_env_int("CRI_CLASSIFIER_MAX_OUTPUT_TOKENS", 1200)
+
+    prompt = build_query_classifier_prompt(query=query.strip())
+
+    data, debug = _call_openai_classifier(
+        prompt=prompt,
+        model=model,
+        max_output_tokens=max_output_tokens,
+        client=client,
+        track_usage_cost=track_usage_cost,
+    )
+
+    out = _normalize_classifier_output(data, debug)
+    normalized, errors = validate_classification(out)
+    out["normalized"] = normalized
+    out["validation_errors"] = errors
     return out
 
 
