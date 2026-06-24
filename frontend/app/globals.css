@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --background: #070b12;
+  --surface: #0d1420;
+  --surface-elevated: #111827;
+  --border: #243244;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --accent: #c8a96a;
+  --accent-blue: #3b82f6;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 78% -20%, rgba(44, 75, 112, 0.22), transparent 34rem),
+    radial-gradient(circle at -10% 30%, rgba(200, 169, 106, 0.07), transparent 30rem),
+    var(--background);
+  color: var(--text-primary);
+  min-height: 100vh;
+}
+
+::selection { background: rgba(200, 169, 106, 0.28); }
+
+@layer components {
+  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.24em] text-gold; }
+  .panel { @apply border border-line/80 bg-panel/75 shadow-panel backdrop-blur-xl; }
+  .button-primary { @apply inline-flex items-center justify-center gap-2 rounded-md bg-gold px-5 py-3 text-sm font-semibold text-[#111318] transition hover:bg-[#d7bb82] focus:outline-none focus:ring-2 focus:ring-gold/50; }
+  .button-secondary { @apply inline-flex items-center justify-center gap-2 rounded-md border border-line bg-raised/60 px-5 py-3 text-sm font-semibold text-slate-100 transition hover:border-slate-500 hover:bg-raised; }
+  .field { @apply w-full rounded-md border border-line bg-[#09101a] px-4 py-3 text-sm text-slate-100 outline-none transition placeholder:text-slate-600 focus:border-gold/70 focus:ring-2 focus:ring-gold/10; }
+}
+
+.answer-html h2, .answer-html h3 { color: #f8fafc; font-family: "Iowan Old Style", "Palatino Linotype", Georgia, serif; }
+.answer-html h2 { margin: 0 0 1rem; font-size: 1.6rem; }
+.answer-html h3 { margin: 1.8rem 0 .65rem; font-size: 1.18rem; }
+.answer-html p, .answer-html li { color: #cbd5e1; line-height: 1.75; }
+.answer-html ul, .answer-html ol { padding-left: 1.3rem; }
+.answer-html a { color: #d9bd84; text-decoration: underline; text-underline-offset: 3px; }
+.answer-html table { width: 100%; margin: 1.25rem 0; border-collapse: collapse; font-size: .875rem; }
+.answer-html th, .answer-html td { padding: .75rem; border: 1px solid #243244; text-align: left; }
+.answer-html th { background: #111827; color: #f8fafc; }
+.answer-html blockquote { border-left: 2px solid #c8a96a; padding-left: 1rem; color: #cbd5e1; }
+.answer-html .tag { display: inline-block; padding: .15rem .4rem; margin: .15rem; border: 1px solid #334155; border-radius: .25rem; color: #94a3b8; font-size: .7rem; }

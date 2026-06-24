@@ -1,0 +1,6 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+pydantic-settings==2.11.0
+python-dotenv==1.0.1
+
+# Existing research pipeline dependencies are installed from the root requirements.txt.

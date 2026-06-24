@@ -2,30 +2,83 @@
 
 A powerful Retrieval-Augmented Generation (RAG) application built with Streamlit and LangGraph for researching SEC cryptocurrency regulations, policies, and guidance. This tool combines hybrid semantic search with an intelligent conversational agent to help users dive deep into SEC Crypto knowledge.
 
+## Running the Full Stack App
+
+The repository now includes a production-style Next.js interface and a FastAPI gateway around the existing LangGraph, Pinecone, and report services. The original Streamlit application remains available.
+
+### Backend
+
+1. Create the backend environment file:
+  ```bash
+   cp backend/.env.example backend/.env
+  ```
+2. Add the OpenAI and Pinecone credentials used by the existing research pipeline.
+3. Install the root pipeline requirements and the API requirements:
+  ```bash
+   pip install -r requirements.txt
+   pip install -r backend/requirements.txt
+  ```
+4. Start FastAPI:
+  ```bash
+   cd backend
+   uvicorn main:app --reload --port 8000
+  ```
+
+The API is available at `http://localhost:8000`, with interactive documentation at `http://localhost:8000/docs`. `GET /health` and the report endpoints do not initialize OpenAI or Pinecone clients.
+
+### Frontend
+
+1. Create the frontend environment file:
+  ```bash
+   cp frontend/.env.local.example frontend/.env.local
+  ```
+2. Install dependencies and start Next.js:
+  ```bash
+   cd frontend
+   npm install
+   npm run dev
+  ```
+
+Open `http://localhost:3000`.
+
+### Architecture
+
+```text
+Next.js UI → FastAPI API → LangGraph Agent / Search Handler → Pinecone / OpenAI
+                         ↘ Local weekly report archive
+```
+
+The frontend never receives OpenAI or Pinecone credentials. It communicates only with the FastAPI endpoints configured by `NEXT_PUBLIC_API_BASE_URL`.
+
 ## 🚀 Features
 
 ### 🔍 **Dual Interaction Modes**
+
 - **Search Mode**: Direct semantic search across the SEC Crypto knowledge base with adjustable contextual search blending
 - **Chat Mode**: Conversational interface powered by a LangGraph agent that can search, analyze, and provide evidence-backed answers
 
 ### 🎯 **Advanced Search Capabilities**
+
 - **Hybrid Search**: Combines dense semantic embeddings (OpenAI) with sparse keyword search (SPLADE) for optimal retrieval
 - **Adjustable Alpha Parameter**: Fine-tune the blend between keyword-style (alpha=0.0) and fully contextual semantic search (alpha=1.0)
 - **Relevance Scoring**: Results ranked by semantic similarity with configurable score thresholds
 - **Search History**: Track and review previous searches within each session
 
 ### 🤖 **Intelligent Agent**
+
 - **LangGraph-Powered**: Uses LangGraph for structured agent workflows with tool calling
 - **RAG Integration**: Agent automatically searches the knowledge base to provide evidence-backed responses
 - **Conversation Context**: Maintains conversation history for coherent multi-turn dialogues
 - **Deep Research Support**: Asks follow-up questions to understand research depth and context
 
 ### 💼 **Session Management**
+
 - **Multiple Workspaces**: Create and manage multiple research sessions
 - **Session Isolation**: Each session maintains its own search and chat history
 - **Easy Switching**: Seamlessly switch between sessions without losing context
 
 ### 🎨 **Modern UI**
+
 - **Dark Theme**: Beautiful glassmorphism-style dark interface
 - **Responsive Design**: Clean, modern layout optimized for research workflows
 - **Result Visualization**: Clear presentation of search results with metadata, scores, and source links
@@ -119,9 +172,9 @@ The application will open in your default web browser at `http://localhost:8501`
 1. Select **Search** mode from the top navigation
 2. Enter your query in the search box
 3. Adjust the **Contextual Search** slider to control the blend between keyword and semantic search:
-   - **0.0**: Pure keyword search (exact term matching)
-   - **0.5**: Balanced hybrid search (recommended)
-   - **1.0**: Pure semantic search (contextual understanding)
+  - **0.0**: Pure keyword search (exact term matching)
+  - **0.5**: Balanced hybrid search (recommended)
+  - **1.0**: Pure semantic search (contextual understanding)
 4. Set the number of results (5-50)
 5. Click **Search** to retrieve relevant documents
 6. Review results with relevance scores, snippets, and source links
@@ -131,9 +184,9 @@ The application will open in your default web browser at `http://localhost:8501`
 1. Select **Chat** mode from the top navigation
 2. Type your question or research query
 3. The agent will automatically:
-   - Search the knowledge base for relevant information
-   - Analyze and synthesize the results
-   - Provide evidence-backed answers with citations
+  - Search the knowledge base for relevant information
+  - Analyze and synthesize the results
+  - Provide evidence-backed answers with citations
 4. Continue the conversation with follow-up questions
 5. Use **Clear conversation** to start fresh
 
@@ -165,28 +218,24 @@ SEC-Crypto-UI/
 ### Components
 
 1. **Frontend (`app.py`)**
-   - Streamlit UI with session management
-   - Search and Chat mode interfaces
-   - Result visualization and history tracking
-
+  - Streamlit UI with session management
+  - Search and Chat mode interfaces
+  - Result visualization and history tracking
 2. **Agent Layer (`langgraph_agent.py`)**
-   - LangGraph state machine for agent workflows
-   - RAG search tool integration
-   - Conversation context management
-
+  - LangGraph state machine for agent workflows
+  - RAG search tool integration
+  - Conversation context management
 3. **Search Layer (`search_handler.py`)**
-   - Interface between UI and Pinecone backend
-   - Result formatting and structuring
-
+  - Interface between UI and Pinecone backend
+  - Result formatting and structuring
 4. **Vector Database (`pinecone_hybrid.py`)**
-   - Hybrid search implementation
-   - Dense + sparse embedding combination
-   - Score normalization and filtering
-
+  - Hybrid search implementation
+  - Dense + sparse embedding combination
+  - Score normalization and filtering
 5. **Utilities (`utils.py`)**
-   - Embedding model initialization
-   - LLM configuration
-   - Helper functions
+  - Embedding model initialization
+  - LLM configuration
+  - Helper functions
 
 ### Search Flow
 
@@ -233,12 +282,14 @@ UI Display
 ## 🔍 Example Queries
 
 ### Search Mode
+
 - "Bitcoin ETF approval process"
 - "SEC Form 10-K cryptocurrency disclosure requirements"
 - "How does the SEC regulate stablecoins?"
 - "Digital asset classification under securities law"
 
 ### Chat Mode
+
 - "What are the requirements for cryptocurrency exchanges?"
 - "I want to dive deep into how the SEC regulates Bitcoin ETFs. Can you help me research this comprehensively?"
 - "Explain the difference between security tokens and utility tokens according to SEC guidance"
@@ -281,15 +332,17 @@ python -m sec_scraping.ingest --test --dry-run
 
 ### Environment variables
 
-| Variable | Default | Purpose |
-|----------|---------|---------|
-| `PINECONE_API_KEY` | (required) | Pinecone API key |
-| `PINECONE_INDEX_NAME` | `sec-cryto-knowledge-base-rag` | Index name |
-| `PINECONE_NAMESPACE` | `sec-knowledge-base` | Namespace |
-| `SEC_CHUNK_MAX_TOKENS` | `500` | Chunk size |
-| `SEC_CHUNK_OVERLAP_TOKENS` | `100` | Chunk overlap |
-| `SEC_INGEST_ROW_BATCH_SIZE` | `10` | Rows per batch before saving parquet |
-| `SEC_INGEST_VECTOR_BATCH_SIZE` | `32` | Vectors per Pinecone upsert call |
+
+| Variable                       | Default                        | Purpose                              |
+| ------------------------------ | ------------------------------ | ------------------------------------ |
+| `PINECONE_API_KEY`             | (required)                     | Pinecone API key                     |
+| `PINECONE_INDEX_NAME`          | `sec-cryto-knowledge-base-rag` | Index name                           |
+| `PINECONE_NAMESPACE`           | `sec-knowledge-base`           | Namespace                            |
+| `SEC_CHUNK_MAX_TOKENS`         | `500`                          | Chunk size                           |
+| `SEC_CHUNK_OVERLAP_TOKENS`     | `100`                          | Chunk overlap                        |
+| `SEC_INGEST_ROW_BATCH_SIZE`    | `10`                           | Rows per batch before saving parquet |
+| `SEC_INGEST_VECTOR_BATCH_SIZE` | `32`                           | Vectors per Pinecone upsert call     |
+
 
 ## 🤝 Contributing
 
@@ -311,3 +364,4 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - Powered by [Pinecone](https://www.pinecone.io/) for vector search
 - Uses [Streamlit](https://streamlit.io/) for the web interface
 - OpenAI for embeddings and language models## 📧 SupportFor issues, questions, or contributions, please open an issue on GitHub.---**Note**: This application requires access to a Pinecone index containing SEC Crypto documents. Ensure your index is properly configured and populated before use.
+
