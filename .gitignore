@@ -10,3 +10,13 @@ frontend/.next/
 frontend/tsconfig.tsbuildinfo
 frontend/.env.local
 backend/.env
+.cursor
+.devcontainer
+
+venv*
+env*
+
+.vscode
+.streamlit
+
+__pycache__*
