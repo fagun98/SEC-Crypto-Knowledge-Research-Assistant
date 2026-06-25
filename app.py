@@ -56,7 +56,7 @@ st.set_page_config(
     layout="wide",
 )
 
-MODES = ("Search", "Chat")
+MODES = ("Chat", "Search", "Instructions")
 
 
 def _init_session() -> None:
@@ -65,7 +65,7 @@ def _init_session() -> None:
     if "active_session" not in st.session_state:
         st.session_state.active_session = "default"
     if "mode" not in st.session_state:
-        st.session_state.mode = "Chat"
+        st.session_state.mode = "Instructions"
 
 
 def _active_session() -> Dict[str, Any]:
@@ -78,7 +78,7 @@ def _render_sidebar() -> None:
     st.session_state.mode = st.sidebar.radio(
         "Mode",
         MODES,
-        index=MODES.index(st.session_state.mode) if st.session_state.mode in MODES else 1,
+        index=MODES.index(st.session_state.mode) if st.session_state.mode in MODES else 2,
     )
 
     if st.sidebar.button("＋ New Session"):
@@ -114,7 +114,12 @@ def _render_search_mode() -> None:
     with col3:
         score_threshold = st.slider("Min score", 0.0, 1.0, 0.5, 0.05)
 
-    if st.button("Search", type="primary") and query.strip():
+    trigger_search = False
+    if st.session_state.get("trigger_search"):
+        st.session_state.trigger_search = False
+        trigger_search = True
+
+    if (st.button("Search", type="primary") or trigger_search) and query.strip():
         with st.spinner("Searching Pinecone…"):
             results = search_pinecone(
                 query=query.strip(),
@@ -153,7 +158,17 @@ def _render_chat_mode() -> None:
                 with st.expander("Retrieval details"):
                     st.json(turn["retrieval_debug"])
 
-    if prompt := st.chat_input("Ask about SEC crypto regulation…"):
+    # Render st.chat_input so it always displays
+    chat_prompt = st.chat_input("Ask about SEC crypto regulation…")
+
+    # Resolve active prompt: check for pending prefilled prompt first
+    prompt = None
+    if st.session_state.get("pending_chat_prompt"):
+        prompt = st.session_state.pop("pending_chat_prompt")
+    elif chat_prompt:
+        prompt = chat_prompt
+
+    if prompt:
         history.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.write(prompt)
@@ -224,11 +239,167 @@ def _render_chat_mode() -> None:
         sess["chat_history"] = history
 
 
+def _render_instructions_page() -> None:
+    st.header("Instructions & About")
+    st.caption("Learn about the SEC Crypto Knowledge Base, how to navigate it, and try out sample research/compliance questions.")
+
+    tab1, tab2, tab3 = st.tabs(["ℹ️ About", "📖 How to Use", "❓ Sample Questions"])
+
+    with tab1:
+        st.markdown("""
+        ### ℹ️ SEC Crypto Knowledge Research Assistant
+
+        Welcome to the **SEC Crypto Knowledge Research Assistant**, a powerful **Retrieval-Augmented Generation (RAG)** platform designed to streamline compliance, research, and analysis of SEC cryptocurrency regulations, policies, guidance, enforcement actions, and stakeholder discussions.
+
+        By integrating state-of-the-art AI agents with high-fidelity document retrieval, this assistant acts as an intelligent companion for legal teams, compliance officers, and regulatory researchers seeking to navigate the complex landscape of digital asset supervision.
+
+        ---
+
+        #### 🌟 Key Capabilities
+        * **🧠 LangGraph-Powered Conversational Agent**: Engages in multi-turn dialogues, synthesizes complex regulatory history, and provides evidence-backed answers.
+        * **🔍 Hybrid Sparse & Dense Retrieval**: Combines semantic embeddings (OpenAI `text-embedding-3-small`) with keyword-matching (SPLADE sparse vectors) through Pinecone to ensure high-precision results.
+        * **🏷️ CRI Ontology Classification**: Classifies and structures retrieved documents according to relevant regulatory domains, giving context-rich answers.
+        * **📂 Session Isolation**: Creates separate research workspaces so you can organize different inquiries without overlap.
+        * **🔗 Active Citations & Proofs**: Provides direct links to the official sources and details of the exact files/sections retrieved during the search.
+        """)
+
+    with tab2:
+        st.markdown("""
+        ### 📖 How to Navigate the Assistant
+
+        This app provides two primary modes of interaction to support different workflows:
+
+        ---
+
+        #### 💬 Chat Mode
+        * **When to use**: Best for open-ended questions, policy evolution, summarizing complex rules, or synthesizing multiple documents.
+        * **How it works**: Simply enter your question in the chat input. The LangGraph agent will decide whether it needs to search the knowledge base, retrieve relevant content, and draft a response.
+        * **Key Features**:
+          * **Citations**: Clickable links to sources are provided directly inside responses.
+          * **Retrieval Details**: Below each response, expand the *Retrieval details* tab to see raw scores and namespaces retrieved by the system.
+          * **Sidebar Controls**: Use **"Clear conversation"** to reset the history for the active session.
+
+        ---
+
+        #### 🔍 Search Mode
+        * **When to use**: Best for locating specific sections, regulatory filings, press releases, or verifying the occurrence of key phrases.
+        * **How it works**: Enter a keyword or query, configure your parameters, and hit the **Search** button.
+        * **Adjustable Parameters**:
+          * **Contextual Search (alpha)**: 
+            * `0.0` is pure keyword matching (lexical SPLADE search).
+            * `1.0` is pure contextual matching (semantic OpenAI embeddings).
+            * `0.5` (default) blends both for the best hybrid performance.
+          * **Results**: Limit the number of retrieved documents (5 to 50).
+          * **Min Score**: Filter out low-confidence matches.
+
+        ---
+
+        #### 💼 Workspace & Session Management
+        * Use **"＋ New Session"** in the sidebar to spawn a clean session workspace.
+        * Switch between sessions using the **"Session"** dropdown to keep different lines of research separated.
+        """)
+
+    with tab3:
+        st.markdown("### 🛠️ Practice & Compliance-Focused Questions")
+        st.caption("These questions help firms evaluate registration requirements, custody guidelines, compliance paths, and jurisdiction limits. Click a button below any question to execute it in Chat or Search mode.")
+
+        compliance_questions = [
+            {
+                "question": "When should a crypto asset or crypto transaction be treated as a securities transaction?",
+                "goal": "Helps firms decide whether they must register, disclose, restrict trading, or avoid offering a product—and helps SEC staff see where clearer guidance is needed."
+            },
+            {
+                "question": "What exact compliance path should a crypto trading platform, ATS, exchange, or broker-dealer follow?",
+                "tag": "Highest Priority",
+                "goal": "Surfaces registration options (exchange, ATS, broker-dealer, custodian, etc.) and where existing rules may not fit 24/7 trading, wallets, on-chain settlement, and tokenized assets."
+            },
+            {
+                "question": "How should custody rules apply to crypto assets, tokenized securities, and stablecoins?",
+                "goal": "Addresses a major operational blocker—who may hold customer crypto, segregation, control, bankruptcy treatment, and whether broker-dealer custody rules need updates."
+            },
+            {
+                "question": "What rules are needed for tokenized securities to work in real markets?",
+                "goal": "Clarifies legal vs. technical treatment (token as security, receipt, claim, or wrapper) across clearing, settlement, transfer agents, and investor rights."
+            },
+            {
+                "question": "Where do SEC and CFTC rules need to be harmonized for crypto products and venues?",
+                "goal": "Helps firms avoid duplicated or conflicting obligations when products sit between securities and commodities regulation."
+            }
+        ]
+
+        for idx, item in enumerate(compliance_questions):
+            with st.container():
+                tag_str = " 🏷️ **(Highest Priority)**" if item.get("tag") else ""
+                st.markdown(f"**{idx+1}. {item['question']}**{tag_str}")
+                st.markdown(f"*{item['goal']}*")
+                col1, col2, _ = st.columns([1.2, 1.4, 5])
+                with col1:
+                    if st.button("💬 Ask in Chat", key=f"comp_chat_{idx}"):
+                        st.session_state.pending_chat_prompt = item["question"]
+                        st.session_state.mode = "Chat"
+                        st.rerun()
+                with col2:
+                    if st.button("🔍 Query in Search", key=f"comp_search_{idx}"):
+                        st.session_state.search_query = item["question"]
+                        st.session_state.trigger_search = True
+                        st.session_state.mode = "Search"
+                        st.rerun()
+                st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
+
+        st.markdown("---")
+
+        st.markdown("### 📚 Research-Style Questions")
+        st.caption("These questions track historical policy shifts, SEC staff statements, stakeholder meeting outputs, and agency coordination. Click a button below any question to execute it in Chat or Search mode.")
+
+        research_questions = [
+            {
+                "question": "Which 2025 topics moved from private stakeholder meetings into public SEC staff statements or no-action positions?",
+                "goal": "Connects Task Force meetings with public outputs (custody FAQs, stablecoin/staking statements, ETP disclosures, no-action letters)."
+            },
+            {
+                "question": "How did the SEC’s 2025 withdrawal of the 2019 broker-dealer custody statement change the regulatory direction for crypto custody?",
+                "goal": "Tracks a concrete policy shift (May 15, 2025 withdrawal of the joint SEC/FINRA staff statement)."
+            },
+            {
+                "question": "How did the SEC’s 2025 staff statements separate meme coins, proof-of-work mining, protocol staking, and liquid staking from securities transactions?",
+                "goal": "Summarizes staff positions across Feb–Aug 2025 on products often treated as securities by default."
+            },
+            {
+                "question": "Did 2025 meeting participants mostly ask for new crypto-specific rules, or no-action relief, safe harbors, and reinterpretation of existing securities laws?",
+                "goal": "Reveals whether industry is seeking new rulemaking vs. relief under current law."
+            },
+            {
+                "question": "What crypto market problems require SEC-CFTC harmonization rather than separate agency action?",
+                "goal": "Aligns with the Sept 2025 joint statement on product/venue definitions, reporting, capital/margin, and coordinated innovation exemptions."
+            }
+        ]
+
+        for idx, item in enumerate(research_questions):
+            with st.container():
+                st.markdown(f"**{idx+1}. {item['question']}**")
+                st.markdown(f"*{item['goal']}*")
+                col1, col2, _ = st.columns([1.2, 1.4, 5])
+                with col1:
+                    if st.button("💬 Ask in Chat", key=f"res_chat_{idx}"):
+                        st.session_state.pending_chat_prompt = item["question"]
+                        st.session_state.mode = "Chat"
+                        st.rerun()
+                with col2:
+                    if st.button("🔍 Query in Search", key=f"res_search_{idx}"):
+                        st.session_state.search_query = item["question"]
+                        st.session_state.trigger_search = True
+                        st.session_state.mode = "Search"
+                        st.rerun()
+                st.markdown("<div style='margin-bottom: 20px;'></div>", unsafe_allow_html=True)
+
+
 def main() -> None:
     _init_session()
     _render_sidebar()
     if st.session_state.mode == "Search":
         _render_search_mode()
+    elif st.session_state.mode == "Instructions":
+        _render_instructions_page()
     else:
         _render_chat_mode()
 
